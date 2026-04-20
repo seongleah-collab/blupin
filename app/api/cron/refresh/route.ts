@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ingestProductHunt } from '@/lib/ingest/producthunt';
+import { classifyPendingEvents } from '@/lib/classify/events';
+
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   // Auth check
@@ -7,34 +12,31 @@ export async function GET(request: NextRequest) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
+  const userId = process.env.BLUPIN_TEST_USER_ID;
+  if (!userId) {
+    return NextResponse.json(
+      { ok: false, error: 'BLUPIN_TEST_USER_ID not set' },
+      { status: 500 }
+    );
+  }
 
   try {
     // Step 1: ingest
-    const ingestRes = await fetch(`${baseUrl}/api/ingest/producthunt`, {
-      method: 'POST',
-      headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
-    });
-    const ingestData = await ingestRes.json();
+    const ingested = await ingestProductHunt(userId, 48);
 
     // Step 2: classify
-    const classifyRes = await fetch(`${baseUrl}/api/classify`, {
-      method: 'POST',
-      headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
-    });
-    const classifyData = await classifyRes.json();
+    const classified = await classifyPendingEvents(userId, 25);
 
     return NextResponse.json({
       ok: true,
-      ingested: ingestData,
-      classified: classifyData,
+      ingested,
+      classified,
       ranAt: new Date().toISOString(),
     });
-  } catch (err) {
+  } catch (err: any) {
+    console.error('[cron/refresh]', err);
     return NextResponse.json(
-      { ok: false, error: String(err) },
+      { ok: false, error: err?.message ?? String(err) },
       { status: 500 }
     );
   }
