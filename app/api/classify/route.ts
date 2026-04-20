@@ -7,8 +7,8 @@ export const maxDuration = 60;
 
 async function handle(req: Request) {
   const authHeader = req.headers.get('authorization');
-  const expected = `Bearer ${process.env.INGEST_SECRET}`;
-  if (!process.env.INGEST_SECRET || authHeader !== expected) {
+  const expected = `Bearer ${process.env.CRON_SECRET}`;
+  if (!process.env.CRON_SECRET || authHeader !== expected) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
