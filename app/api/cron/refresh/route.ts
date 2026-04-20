@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
     const ingestData = await ingestRes.json();
 
     // Step 2: classify
-    method: 'POST',
     const classifyRes = await fetch(`${baseUrl}/api/classify`, {
+      method: 'POST',
       headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
     });
     const classifyData = await classifyRes.json();
