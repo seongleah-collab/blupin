@@ -56,7 +56,7 @@ export async function ingestHackerNews(userId: string, hoursBack = 24) {
 
   const showHnIds = new Set(showHn.map((h) => h.objectID));
 
-const toRow = (h: HNHit, eventType: 'product_launch') => ({
+const toRow = (h: HNHit, eventType: 'product_launch' | 'discussion') => ({
         user_id: userId,
     competitor_id: null,
     potential_competitor_name:
@@ -81,7 +81,7 @@ const toRow = (h: HNHit, eventType: 'product_launch') => ({
     ...showHn.map((h) => toRow(h, 'product_launch')),
     ...frontPage
       .filter((h) => !showHnIds.has(h.objectID)) // dedupe
-.map((h) => toRow(h, 'product_launch')),
+.map((h) => toRow(h, 'discussion')),
   ];
 
   if (rows.length === 0) return { fetched: 0, inserted: 0 };

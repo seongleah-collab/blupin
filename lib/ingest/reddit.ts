@@ -63,7 +63,7 @@ export async function ingestReddit(userId: string, hoursBack = 24) {
     source: 'reddit',
     source_url: `https://www.reddit.com${p.permalink}`,
     source_id: p.id,
-     event_type: 'product_launch',
+     event_type: p.subreddit.toLowerCase() === 'saas' ? 'discussion' : 'product_launch',
          title: `[r/${p.subreddit}] ${p.title}`,
     content: [
       p.selftext || '',
