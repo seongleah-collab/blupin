@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ingestProductHunt } from '@/lib/ingest/producthunt';
+import { ingestHackerNews } from '@/lib/ingest/hackernews';
+import { ingestReddit } from '@/lib/ingest/reddit';
 import { classifyPendingEvents } from '@/lib/classify/events';
 
 export const runtime = 'nodejs';
@@ -19,11 +21,19 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-
-  try {
+try {
     // Step 1: ingest
-    const ingested = await ingestProductHunt(userId, 48);
-
+    const [ph, hn, reddit] = await Promise.all([
+      ingestProductHunt(userId, 48),
+      ingestHackerNews(userId),
+      ingestReddit(userId),
+    ]);
+    const ingested = {
+      product_hunt: ph,
+      hacker_news: hn,
+      reddit,
+      total: ph.inserted + hn.inserted + reddit.inserted,
+    };
     // Step 2: classify
     const classified = await classifyPendingEvents(userId, 25);
 
