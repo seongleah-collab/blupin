@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
+import Link from 'next/link';
 import { Fraunces, Inter } from 'next/font/google';
+import SiteNav from './components/SiteNav';
+import SkyBackdrop from './components/SkyBackdrop';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -47,46 +49,17 @@ export default function Home() {
 
   return (
     <>
-      {/* sticky top nav */}
-      <nav className={`${inter.className} absolute top-0 left-0 right-0 z-50 w-full`}>
-  <div className="w-full px-8 sm:px-12 py-6 flex items-center gap-10">
-    <span className="text-2xl font-medium lowercase tracking-tight text-white font-['Times_New_Roman'] drop-shadow-sm">
-      blupin<span className="text-blue-300">.</span>
-    </span>
-
-    <div className="hidden sm:flex items-center gap-10">
-      <a href="#how-it-works" className="text-base text-white/90 hover:text-white transition-colors">
-        how it works
-      </a>
-      <a href="#about" className="text-base text-white/90 hover:text-white transition-colors">
-        about
-      </a>
-      <a href="#waitlist-form" className="text-base text-white/90 hover:text-white transition-colors">
-        join waitlist
-      </a>
-    </div>
-  </div>
-</nav>
+      <SiteNav
+        links={[
+          { href: '#how-it-works', label: 'how it works' },
+          { href: '#about', label: 'about' },
+          { href: '/faq', label: 'faq' },
+          { href: '/waitlist', label: 'join waitlist' },
+        ]}
+      />
 
       <main className={`${inter.className} relative min-h-screen text-white flex flex-col items-center px-6 overflow-hidden`}>
-        {/* layered cloud atmosphere */}
-        <div className="fixed inset-0 -z-10">
-          <Image
-            src="/sky.jpg"
-            alt=""
-            fill
-            priority
-            className="object-cover"
-          />
-          {/* lavender-blue wash tints the clouds */}
-          <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/50 via-purple-300/30 to-blue-200/40 mix-blend-soft-light" />
-          {/* diagonal mood tint for depth */}
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-transparent to-purple-500/20" />
-          {/* radial glow from top */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(199,210,254,0.35),transparent_60%)]" />
-          {/* bottom fade */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-indigo-950/15" />
-        </div>
+        <SkyBackdrop />
 
         {/* hero — unchanged, still white on clouds */}
         <section className="w-full max-w-3xl flex flex-col items-center text-center gap-8 min-h-screen justify-center">
@@ -343,13 +316,13 @@ export default function Home() {
                 <div className="mt-1.5 text-[10px] uppercase tracking-[0.25em] text-white/75">to first answer</div>
               </div>
               <div className="md:text-right">
-                <a
-                  href="#waitlist-form"
+                <Link
+                  href="/waitlist"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white text-indigo-950 text-[13px] font-medium hover:bg-white/95 transition-colors shadow-lg shadow-indigo-500/20"
                 >
                   join the waitlist
                   <span aria-hidden>→</span>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
