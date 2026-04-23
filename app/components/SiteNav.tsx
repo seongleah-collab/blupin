@@ -21,9 +21,9 @@ export default function SiteNav({ links = defaultLinks }: { links?: NavLink[] })
       <div className="w-full px-8 sm:px-12 py-6 flex items-center gap-10">
         <Link
           href="/"
-          className="text-2xl font-medium lowercase tracking-tight text-white font-['Times_New_Roman'] drop-shadow-sm"
+          className="text-2xl font-medium lowercase tracking-tight text-white font-['Times_New_Roman'] drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
         >
-          blupin<span className="text-blue-300">.</span>
+          blupin<span className="text-blue-200">.</span>
         </Link>
 
         <div className="hidden sm:flex items-center gap-10">
@@ -31,7 +31,7 @@ export default function SiteNav({ links = defaultLinks }: { links?: NavLink[] })
             <Link
               key={link.href}
               href={link.href}
-              className="text-base text-white/90 hover:text-white transition-colors"
+              className="text-base font-medium text-white hover:text-white transition-colors drop-shadow-[0_1px_6px_rgba(0,0,0,0.25)]"
             >
               {link.label}
             </Link>
