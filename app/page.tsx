@@ -61,28 +61,28 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  if (status === 'loading') return;
-  setStatus('loading');
-  setErrorMsg('');
-  try {
-    const res = await fetch('/api/waitlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    const data = await res.json();
-    if (data.ok) {
-      window.location.href = '/onboarding';
-    } else {
+    e.preventDefault();
+    if (status === 'loading') return;
+    setStatus('loading');
+    setErrorMsg('');
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setStatus('success');
+      } else {
+        setStatus('error');
+        setErrorMsg(data.error || 'something went wrong');
+      }
+    } catch {
       setStatus('error');
-      setErrorMsg(data.error || 'something went wrong');
+      setErrorMsg('network error — try again');
     }
-  } catch {
-    setStatus('error');
-    setErrorMsg('network error — try again');
   }
-}
 
   return (
     <>
@@ -114,7 +114,7 @@ export default function Home() {
           {status === 'success' ? (
             <div className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/25 backdrop-blur-xl text-white font-medium text-sm border border-white/60 shadow-xl shadow-indigo-500/20">
               <span className="text-green-200">✓</span>
-              you&apos;re on the list. we&apos;ll be in touch.
+              check your email — we sent you a link to continue.
             </div>
           ) : (
             <form id="waitlist-form" onSubmit={handleSubmit} className="w-full max-w-md flex flex-col sm:flex-row gap-2">
@@ -458,11 +458,8 @@ export default function Home() {
               <div className="flex flex-col items-center gap-3">
                 <div className="flex items-center gap-2 px-5 py-3 rounded-full bg-slate-900 text-white text-sm shadow-lg shadow-slate-900/10">
                   <span className="text-green-300">✓</span>
-                  you&apos;re on the list. we&apos;ll be in touch.
+                  check your email — we sent you a link to continue.
                 </div>
-                <p className="text-sm text-slate-500">
-                  keep an eye on your inbox — we send the first note within a week.
-                </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col sm:flex-row gap-2">
