@@ -61,28 +61,28 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (status === 'loading') return;
-    setStatus('loading');
-    setErrorMsg('');
-    try {
-      const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setStatus('success');
-      } else {
-        setStatus('error');
-        setErrorMsg(data.error || 'something went wrong');
-      }
-    } catch {
+  e.preventDefault();
+  if (status === 'loading') return;
+  setStatus('loading');
+  setErrorMsg('');
+  try {
+    const res = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.href = '/onboarding';
+    } else {
       setStatus('error');
-      setErrorMsg('network error — try again');
+      setErrorMsg(data.error || 'something went wrong');
     }
+  } catch {
+    setStatus('error');
+    setErrorMsg('network error — try again');
   }
+}
 
   return (
     <>
