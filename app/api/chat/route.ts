@@ -1,23 +1,15 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-function supabaseAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
-  );
-}
-
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
 function buildSystemPrompt(
-  company: { name: string; description: string; niche_keywords: string[]; stage: string | null },
+  company: { company_name: string; company_description: string },
   events: Array<{
     potential_competitor_name: string | null;
     title: string;
@@ -47,12 +39,10 @@ function buildSystemPrompt(
         .join('\n\n')
     : '(no relevant events tracked yet)';
 
-  return `You are blupin — an AI-native competitive intelligence co-pilot built specifically for ${company.name}'s founder. You are NOT a generic assistant; you are their dedicated analyst for the competitive landscape.
+  return `You are blupin — an AI-native competitive intelligence co-pilot built specifically for ${company.company_name}'s founder. You are NOT a generic assistant; you are their dedicated analyst for the competitive landscape.
 
-## About ${company.name}
-${company.description}
-Stage: ${company.stage ?? 'unknown'}
-Niche keywords: ${company.niche_keywords.join(', ')}
+## About ${company.company_name}
+${company.company_description}
 
 ## What you monitor
 You monitor three layers of competition: direct competitors, adjacent competitors, and new entrants in the niche.
@@ -82,26 +72,24 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'messages required' }), { status: 400 });
     }
 
-    const userId = process.env.BLUPIN_TEST_USER_ID;
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'BLUPIN_TEST_USER_ID not set' }), { status: 500 });
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'not authenticated' }), { status: 401 });
     }
 
-    const db = supabaseAdmin();
-
     const [companyRes, eventsRes] = await Promise.all([
-      db
+      supabase
         .from('user_companies')
-        .select('name, description, niche_keywords, stage')
-        .eq('user_id', userId)
-        .limit(1)
+        .select('company_name, company_description')
+        .eq('id', user.id)
         .single(),
-      db
+      supabase
         .from('competitor_events')
         .select(
           'potential_competitor_name, title, summary, recommended_action, threat_level, relevance_score, source, published_at, niche_match'
         )
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .eq('classification_status', 'classified')
         .order('relevance_score', { ascending: false, nullsFirst: false })
         .limit(30),
