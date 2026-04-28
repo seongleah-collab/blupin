@@ -8,6 +8,12 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
+function deriveTitle(text: string): string {
+  const cleaned = text.replace(/\s+/g, ' ').trim();
+  if (cleaned.length <= 60) return cleaned;
+  return cleaned.slice(0, 57).trimEnd() + '…';
+}
+
 function buildSystemPrompt(
   company: { company_name: string; company_description: string },
   competitors: Array<{ name: string; notes: string | null }>,
@@ -99,6 +105,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const messages = body.messages as ChatMessage[];
+    const incomingConvoId: string | undefined = body.conversationId;
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: 'messages required' }), { status: 400 });
@@ -136,6 +143,48 @@ export async function POST(req: Request) {
     if (competitorsRes.error) throw competitorsRes.error;
     if (eventsRes.error) throw eventsRes.error;
 
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
+    if (!lastUserMsg) {
+      return new Response(JSON.stringify({ error: 'no user message in payload' }), { status: 400 });
+    }
+
+    let conversationId = incomingConvoId;
+    if (!conversationId) {
+      const { data: created, error: createErr } = await supabase
+        .from('conversations')
+        .insert({ user_id: user.id, title: deriveTitle(lastUserMsg.content) })
+        .select('id')
+        .single();
+      if (createErr || !created) {
+        return new Response(JSON.stringify({ error: createErr?.message ?? 'create convo failed' }), { status: 500 });
+      }
+      conversationId = created.id;
+    } else {
+      const { data: owned, error: ownErr } = await supabase
+        .from('conversations')
+        .select('id, title')
+        .eq('id', conversationId)
+        .eq('user_id', user.id)
+        .single();
+      if (ownErr || !owned) {
+        return new Response(JSON.stringify({ error: 'conversation not found' }), { status: 404 });
+      }
+      if (!owned.title) {
+        await supabase
+          .from('conversations')
+          .update({ title: deriveTitle(lastUserMsg.content) })
+          .eq('id', conversationId)
+          .eq('user_id', user.id);
+      }
+    }
+
+    await supabase.from('conversation_messages').insert({
+      conversation_id: conversationId,
+      user_id: user.id,
+      role: 'user',
+      content: lastUserMsg.content,
+    });
+
     const systemPrompt = buildSystemPrompt(
       companyRes.data!,
       competitorsRes.data ?? [],
@@ -143,8 +192,10 @@ export async function POST(req: Request) {
     );
 
     const encoder = new TextEncoder();
+    const finalConvoId = conversationId;
     const stream = new ReadableStream({
       async start(controller) {
+        let fullText = '';
         try {
           const claudeStream = await anthropic.messages.stream({
             model: 'claude-sonnet-4-6',
@@ -155,13 +206,29 @@ export async function POST(req: Request) {
 
           for await (const chunk of claudeStream) {
             if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+              fullText += chunk.delta.text;
               controller.enqueue(encoder.encode(chunk.delta.text));
             }
           }
-          controller.close();
         } catch (err: any) {
           console.error('[chat stream]', err);
-          controller.enqueue(encoder.encode(`\n\n[error: ${err.message}]`));
+          const errText = `\n\n[error: ${err.message}]`;
+          fullText += errText;
+          controller.enqueue(encoder.encode(errText));
+        } finally {
+          if (fullText.trim().length > 0) {
+            await supabase.from('conversation_messages').insert({
+              conversation_id: finalConvoId,
+              user_id: user.id,
+              role: 'assistant',
+              content: fullText,
+            });
+            await supabase
+              .from('conversations')
+              .update({ updated_at: new Date().toISOString() })
+              .eq('id', finalConvoId)
+              .eq('user_id', user.id);
+          }
           controller.close();
         }
       },
@@ -172,6 +239,7 @@ export async function POST(req: Request) {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
         'X-Accel-Buffering': 'no',
+        'X-Conversation-Id': conversationId!,
       },
     });
   } catch (err: any) {

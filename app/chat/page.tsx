@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/client';
 import Wordmark from '@/app/components/Wordmark';
+import Sidebar, { ConversationListItem } from './Sidebar';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -23,7 +24,6 @@ function nameFromEmail(email: string | undefined | null): string {
 
 function severityHue(n: number): number {
   const clamped = Math.max(1, Math.min(10, n));
-  // hsl hue: 50 (yellow) at 1 → 0 (red) at 10
   return 50 - ((clamped - 1) * 50) / 9;
 }
 
@@ -88,8 +88,22 @@ export default function ChatPage() {
   const [firstName, setFirstName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [greeting, setGreeting] = useState('');
+  const [conversations, setConversations] = useState<ConversationListItem[]>([]);
+  const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const refreshConversations = useCallback(async () => {
+    try {
+      const res = await fetch('/api/conversations');
+      if (!res.ok) return;
+      const data = await res.json();
+      setConversations(data.conversations ?? []);
+    } catch {
+      // swallow — sidebar just stays as-is
+    }
+  }, []);
 
   useEffect(() => {
     setGreeting(timeGreeting());
@@ -106,7 +120,8 @@ export default function ChatPage() {
         .single();
       if (data?.company_name) setCompanyName(data.company_name);
     });
-  }, []);
+    refreshConversations();
+  }, [refreshConversations]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -118,6 +133,45 @@ export default function ChatPage() {
     ta.style.height = 'auto';
     ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
   }, [input]);
+
+  function startNewChat() {
+    if (isStreaming) return;
+    setActiveConvoId(null);
+    setMessages([]);
+    setInput('');
+  }
+
+  async function loadConversation(id: string) {
+    if (isStreaming || id === activeConvoId) return;
+    try {
+      const res = await fetch(`/api/conversations/${id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setActiveConvoId(id);
+      setMessages(
+        (data.messages ?? []).map((m: { role: 'user' | 'assistant'; content: string }) => ({
+          role: m.role,
+          content: m.content,
+        }))
+      );
+    } catch {
+      // ignore
+    }
+  }
+
+  async function deleteConversation(id: string) {
+    try {
+      const res = await fetch(`/api/conversations/${id}`, { method: 'DELETE' });
+      if (!res.ok) return;
+      setConversations((prev) => prev.filter((c) => c.id !== id));
+      if (activeConvoId === id) {
+        setActiveConvoId(null);
+        setMessages([]);
+      }
+    } catch {
+      // ignore
+    }
+  }
 
   async function sendMessage(text: string) {
     const trimmed = text.trim();
@@ -135,11 +189,19 @@ export default function ChatPage() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({
+          messages: newMessages,
+          conversationId: activeConvoId,
+        }),
       });
 
       if (!res.ok || !res.body) {
         throw new Error(`request failed: ${res.status}`);
+      }
+
+      const returnedConvoId = res.headers.get('X-Conversation-Id');
+      if (returnedConvoId && returnedConvoId !== activeConvoId) {
+        setActiveConvoId(returnedConvoId);
       }
 
       const reader = res.body.getReader();
@@ -169,6 +231,7 @@ export default function ChatPage() {
       });
     } finally {
       setIsStreaming(false);
+      refreshConversations();
     }
   }
 
@@ -187,10 +250,7 @@ export default function ChatPage() {
   const isEmpty = messages.length === 0;
 
   const composer = (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full"
-    >
+    <form onSubmit={handleSubmit} className="w-full">
       <div className="relative w-full rounded-3xl border border-neutral-200 bg-white shadow-[0_2px_24px_-12px_rgba(0,0,0,0.15)] focus-within:border-neutral-400 transition-colors">
         <textarea
           ref={textareaRef}
@@ -218,7 +278,7 @@ export default function ChatPage() {
   );
 
   return (
-    <div className="flex flex-col h-screen bg-white text-neutral-900">
+    <div className="flex h-screen bg-white text-neutral-900">
       <style>{`
         @keyframes blu-fade-up {
           from { opacity: 0; transform: translateY(8px); }
@@ -238,88 +298,102 @@ export default function ChatPage() {
         .blu-dot       { animation: blu-typing 1.2s ease-in-out infinite both; }
       `}</style>
 
-      <header className="px-6 py-4 flex items-center">
-        <Wordmark className="text-base font-medium tracking-tight text-neutral-900" />
-      </header>
+      <Sidebar
+        conversations={conversations}
+        activeId={activeConvoId}
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed((v) => !v)}
+        onNewChat={startNewChat}
+        onSelect={loadConversation}
+        onDelete={deleteConversation}
+      />
 
-      {isEmpty ? (
-        <main className="flex-1 flex flex-col items-center justify-center px-6 blu-pane">
-          <div className="w-full max-w-2xl flex flex-col items-center text-center">
-            <h1 className="text-4xl md:text-5xl text-neutral-900 leading-tight mb-4">
-              {greeting && (
-                <>
-                  good {greeting},{' '}
-                  <span className={`${fraunces.className} italic font-medium`}>
-                    {firstName || 'founder'}
-                  </span>
-                  .
-                </>
-              )}
-            </h1>
-            <p className="text-base text-neutral-500 mb-10 max-w-md leading-relaxed">
-              {companyName
-                ? <>here&apos;s what&apos;s moving in <span className="text-neutral-700 font-medium">{companyName}</span>&apos;s space — ask me anything.</>
-                : <>here&apos;s what&apos;s moving in your space — ask me anything.</>}
-            </p>
-            <div className="w-full">{composer}</div>
-            <div className="mt-8 flex flex-wrap gap-2 justify-center">
-              {[
-                'what should i pay attention to today?',
-                companyName ? `who's the biggest threat to ${companyName}?` : "who's the biggest threat this week?",
-                'what did my competitors ship recently?',
-              ].map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => sendMessage(q)}
-                  disabled={isStreaming}
-                  className="px-4 py-2 rounded-full border border-neutral-200 text-[13px] text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-        </main>
-      ) : (
-        <>
-          <main className="flex-1 overflow-y-auto blu-pane-soft">
-            <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
-              {messages.map((m, i) => {
-                const isAssistantStreamingNow =
-                  m.role === 'assistant' && !m.content && isStreaming && i === messages.length - 1;
-                return (
-                  <div
-                    key={i}
-                    className={`blu-msg ${
-                      m.role === 'user'
-                        ? 'ml-auto bg-neutral-100 text-neutral-900 px-4 py-2.5 rounded-2xl max-w-[85%] w-fit'
-                        : 'text-neutral-900 whitespace-pre-wrap leading-relaxed'
-                    }`}
+      <div className="flex-1 flex flex-col min-w-0">
+        {sidebarCollapsed && (
+          <header className="px-6 py-4 flex items-center">
+            <Wordmark className="text-base font-medium tracking-tight text-neutral-900" />
+          </header>
+        )}
+
+        {isEmpty ? (
+          <main className="flex-1 flex flex-col items-center justify-center px-6 blu-pane">
+            <div className="w-full max-w-2xl flex flex-col items-center text-center">
+              <h1 className="text-4xl md:text-5xl text-neutral-900 leading-tight mb-4">
+                {greeting && (
+                  <>
+                    good {greeting},{' '}
+                    <span className={`${fraunces.className} italic font-medium`}>
+                      {firstName || 'founder'}
+                    </span>
+                    .
+                  </>
+                )}
+              </h1>
+              <p className="text-base text-neutral-500 mb-10 max-w-md leading-relaxed">
+                {companyName
+                  ? <>here&apos;s what&apos;s moving in <span className="text-neutral-700 font-medium">{companyName}</span>&apos;s space — ask me anything.</>
+                  : <>here&apos;s what&apos;s moving in your space — ask me anything.</>}
+              </p>
+              <div className="w-full">{composer}</div>
+              <div className="mt-8 flex flex-wrap gap-2 justify-center">
+                {[
+                  'what should i pay attention to today?',
+                  companyName ? `who's the biggest threat to ${companyName}?` : "who's the biggest threat this week?",
+                  'what did my competitors ship recently?',
+                ].map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => sendMessage(q)}
+                    disabled={isStreaming}
+                    className="px-4 py-2 rounded-full border border-neutral-200 text-[13px] text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isAssistantStreamingNow ? (
-                      <span className="inline-flex items-center gap-1.5 py-1.5">
-                        <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400" style={{ animationDelay: '0s' }} />
-                        <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400" style={{ animationDelay: '0.15s' }} />
-                        <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400" style={{ animationDelay: '0.3s' }} />
-                      </span>
-                    ) : m.role === 'assistant' ? (
-                      renderAssistantContent(m.content)
-                    ) : (
-                      m.content
-                    )}
-                  </div>
-                );
-              })}
-              <div ref={bottomRef} />
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
           </main>
+        ) : (
+          <>
+            <main className="flex-1 overflow-y-auto blu-pane-soft">
+              <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+                {messages.map((m, i) => {
+                  const isAssistantStreamingNow =
+                    m.role === 'assistant' && !m.content && isStreaming && i === messages.length - 1;
+                  return (
+                    <div
+                      key={i}
+                      className={`blu-msg ${
+                        m.role === 'user'
+                          ? 'ml-auto bg-neutral-100 text-neutral-900 px-4 py-2.5 rounded-2xl max-w-[85%] w-fit'
+                          : 'text-neutral-900 whitespace-pre-wrap leading-relaxed'
+                      }`}
+                    >
+                      {isAssistantStreamingNow ? (
+                        <span className="inline-flex items-center gap-1.5 py-1.5">
+                          <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400" style={{ animationDelay: '0s' }} />
+                          <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400" style={{ animationDelay: '0.15s' }} />
+                          <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400" style={{ animationDelay: '0.3s' }} />
+                        </span>
+                      ) : m.role === 'assistant' ? (
+                        renderAssistantContent(m.content)
+                      ) : (
+                        m.content
+                      )}
+                    </div>
+                  );
+                })}
+                <div ref={bottomRef} />
+              </div>
+            </main>
 
-          <div className="bg-white">
-            <div className="max-w-2xl mx-auto px-6 pb-6 pt-2">{composer}</div>
-          </div>
-        </>
-      )}
+            <div className="bg-white">
+              <div className="max-w-2xl mx-auto px-6 pb-6 pt-2">{composer}</div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
