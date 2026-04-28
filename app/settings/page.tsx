@@ -7,6 +7,7 @@ import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/client';
 import Wordmark from '@/app/components/Wordmark';
 import ThemeToggle from '@/app/components/ThemeToggle';
+import CompetitorLogo from '@/app/components/CompetitorLogo';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -269,6 +270,7 @@ export default function SettingsPage() {
                     placeholder="competitor name"
                     className="flex-1 px-3 py-2 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-[14px] focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
                   />
+                  <CompetitorLogo name={c.name} />
                   <button
                     type="button"
                     onClick={() => removeCompetitor(i)}

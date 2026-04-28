@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Fraunces } from 'next/font/google'
+import CompetitorLogo from '@/app/components/CompetitorLogo'
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -12,46 +13,6 @@ const fraunces = Fraunces({
 })
 
 type Card = { name: string; description: string; domain?: string; addedBy: 'ai' | 'user' }
-
-function slugDomain(name: string): string {
-  const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '')
-  return slug ? `${slug}.com` : ''
-}
-
-function CompetitorLogo({ name, domain }: { name: string; domain?: string }) {
-  const guess = (domain && domain.length > 0 ? domain : slugDomain(name)).replace(/^www\./, '')
-  const sources = guess
-    ? [
-        `https://logo.clearbit.com/${guess}`,
-        `https://www.google.com/s2/favicons?domain=${guess}&sz=128`,
-        `https://icons.duckduckgo.com/ip3/${guess}.ico`,
-      ]
-    : []
-
-  const [idx, setIdx] = useState(0)
-  const initial = (name?.trim()?.[0] ?? '?').toUpperCase()
-
-  useEffect(() => {
-    setIdx(0)
-  }, [guess])
-
-  if (sources.length === 0 || idx >= sources.length) {
-    return (
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 border border-slate-200 text-sm font-semibold text-slate-500 shrink-0">
-        {initial}
-      </div>
-    )
-  }
-
-  return (
-    <img
-      src={sources[idx]}
-      alt=""
-      onError={() => setIdx((i) => i + 1)}
-      className="w-9 h-9 rounded-lg object-contain bg-white border border-slate-200 shrink-0 p-1"
-    />
-  )
-}
 
 export default function CompetitorsPage() {
   const router = useRouter()
