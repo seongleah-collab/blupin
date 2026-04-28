@@ -2,8 +2,56 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Fraunces } from 'next/font/google'
 
-type Card = { name: string; description: string; addedBy: 'ai' | 'user' }
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  style: ['italic'],
+  weight: ['400', '500'],
+  display: 'swap',
+})
+
+type Card = { name: string; description: string; domain?: string; addedBy: 'ai' | 'user' }
+
+function slugDomain(name: string): string {
+  const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '')
+  return slug ? `${slug}.com` : ''
+}
+
+function CompetitorLogo({ name, domain }: { name: string; domain?: string }) {
+  const guess = (domain && domain.length > 0 ? domain : slugDomain(name)).replace(/^www\./, '')
+  const sources = guess
+    ? [
+        `https://logo.clearbit.com/${guess}`,
+        `https://www.google.com/s2/favicons?domain=${guess}&sz=128`,
+        `https://icons.duckduckgo.com/ip3/${guess}.ico`,
+      ]
+    : []
+
+  const [idx, setIdx] = useState(0)
+  const initial = (name?.trim()?.[0] ?? '?').toUpperCase()
+
+  useEffect(() => {
+    setIdx(0)
+  }, [guess])
+
+  if (sources.length === 0 || idx >= sources.length) {
+    return (
+      <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 border border-slate-200 text-sm font-semibold text-slate-500 shrink-0">
+        {initial}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={sources[idx]}
+      alt=""
+      onError={() => setIdx((i) => i + 1)}
+      className="w-9 h-9 rounded-lg object-contain bg-white border border-slate-200 shrink-0 p-1"
+    />
+  )
+}
 
 export default function CompetitorsPage() {
   const router = useRouter()
@@ -29,8 +77,8 @@ export default function CompetitorsPage() {
           else setError(data.error || 'could not fetch suggestions')
           return
         }
-        setCards((data.competitors ?? []).map((c: { name: string; description: string }) => ({
-          name: c.name, description: c.description, addedBy: 'ai' as const,
+        setCards((data.competitors ?? []).map((c: { name: string; description: string; domain?: string }) => ({
+          name: c.name, description: c.description, domain: c.domain, addedBy: 'ai' as const,
         })))
       } catch (e: any) {
         setError(e.message)
@@ -65,61 +113,90 @@ export default function CompetitorsPage() {
   }
 
   if (checking) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-500">loading...</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white/60">
+        loading...
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen flex items-start justify-center p-6 py-16">
-      <div className="max-w-2xl w-full">
-        <p className="text-sm text-gray-500 mb-2">step 2 of 2</p>
-        <h1 className="text-3xl italic mb-2" style={{fontFamily:'Fraunces'}}>your competitors</h1>
-        <p className="text-gray-600 mb-6">we suggested some — edit, remove, or add your own. you can change these later.</p>
+    <div className="relative min-h-screen bg-black">
+      <div className="relative flex items-start justify-center px-6 py-16">
+        <div className="max-w-2xl w-full">
+          <span className="inline-block text-[11px] uppercase tracking-[0.25em] text-white/60 mb-3">
+            step 2 of 2
+          </span>
+          <h1 className="text-4xl md:text-5xl text-white leading-tight mb-3">
+            your{' '}
+            <span className={`${fraunces.className} italic font-medium`}>
+              competitors
+            </span>
+          </h1>
+          <p className="text-base text-white/70 leading-relaxed mb-10 max-w-lg">
+            we suggested some — edit, remove, or add your own. you can change these later.
+          </p>
 
-        {loadingSuggestions && (
-          <div className="text-gray-500 mb-6">thinking about who watches your space...</div>
-        )}
-
-        <div className="space-y-3 mb-4">
-          {cards.map((c, i) => (
-            <div key={i} className="border rounded-lg p-4 bg-white">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <input
-                  value={c.name}
-                  onChange={(e) => updateCard(i, { name: e.target.value, addedBy: 'user' })}
-                  placeholder="competitor name"
-                  className="flex-1 text-base font-medium px-2 py-1 border rounded"
-                />
-                <button
-                  onClick={() => removeCard(i)}
-                  className="text-sm text-gray-500 hover:text-red-600 px-2 py-1"
-                  aria-label="remove">
-                  remove
-                </button>
-              </div>
-              <textarea
-                value={c.description}
-                onChange={(e) => updateCard(i, { description: e.target.value, addedBy: 'user' })}
-                placeholder="one-line description"
-                rows={2}
-                className="w-full px-2 py-1 border rounded text-sm text-gray-700"
-              />
+          {loadingSuggestions && (
+            <div className="flex items-center gap-3 mb-6 text-sm text-white/60">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.7)]" />
+              thinking about who watches your space…
             </div>
-          ))}
+          )}
+
+          <div className="space-y-3 mb-4">
+            {cards.map((c, i) => (
+              <div
+                key={i}
+                className="rounded-2xl bg-white p-5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]"
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <input
+                    value={c.name}
+                    onChange={(e) => updateCard(i, { name: e.target.value, addedBy: 'user' })}
+                    placeholder="competitor name"
+                    className="flex-1 text-base font-semibold text-slate-900 placeholder:text-slate-400 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:border-slate-900 focus:bg-white transition-colors"
+                  />
+                  <CompetitorLogo name={c.name} domain={c.domain} />
+                  <button
+                    onClick={() => removeCard(i)}
+                    className="text-[12px] uppercase tracking-[0.18em] text-slate-400 hover:text-rose-600 px-2 py-2 transition-colors shrink-0"
+                    aria-label="remove"
+                  >
+                    remove
+                  </button>
+                </div>
+                <textarea
+                  value={c.description}
+                  onChange={(e) => updateCard(i, { description: e.target.value, addedBy: 'user' })}
+                  placeholder="one-line description"
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-[13px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 focus:bg-white transition-colors resize-none"
+                />
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={addCard}
+            className="w-full px-4 py-3 rounded-2xl border-2 border-dashed border-white/25 bg-white/5 text-sm text-white/70 hover:border-white/50 hover:text-white hover:bg-white/10 transition-colors mb-8"
+          >
+            + add another
+          </button>
+
+          <button
+            onClick={handleContinue}
+            disabled={saving || loadingSuggestions}
+            className="w-full px-4 py-3 rounded-full bg-white text-black font-medium hover:bg-white/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {saving ? 'saving…' : 'continue'}
+          </button>
+          {error && (
+            <p className="mt-4 text-sm text-rose-300 bg-rose-950/40 border border-rose-900/60 px-3 py-2 rounded-lg">
+              {error}
+            </p>
+          )}
         </div>
-
-        <button
-          onClick={addCard}
-          className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-700 mb-6">
-          + add another
-        </button>
-
-        <button
-          onClick={handleContinue}
-          disabled={saving || loadingSuggestions}
-          className="w-full px-4 py-3 bg-black text-white rounded-lg disabled:opacity-50">
-          {saving ? 'saving...' : 'continue'}
-        </button>
-        {error && <p className="text-red-600 mt-3 text-sm">{error}</p>}
       </div>
     </div>
   )

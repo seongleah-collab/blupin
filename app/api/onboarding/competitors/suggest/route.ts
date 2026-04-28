@@ -30,9 +30,10 @@ Description: ${company.company_description}
 Suggest 5 likely competitors — products/companies in their direct, adjacent, or new-entrant competitive space. For each, give:
 - name: the product or company name
 - description: one short sentence (max 12 words) describing what they do, in lowercase
+- domain: their primary website domain only — no protocol, no path, no "www." (e.g. "linkedin.com", "ashbyhq.com", "ziprecruiter.com"). Always provide your best guess; never return an empty string. For sub-products, use the parent company's domain (e.g. "LinkedIn Jobs" → "linkedin.com").
 
 Return ONLY a JSON object with this exact shape, no prose, no markdown fences:
-{ "competitors": [ { "name": "...", "description": "..." } ] }`;
+{ "competitors": [ { "name": "...", "description": "...", "domain": "..." } ] }`;
 
   try {
     const res = await anthropic.messages.create({
@@ -45,7 +46,7 @@ Return ONLY a JSON object with this exact shape, no prose, no markdown fences:
     if (!textBlock || textBlock.type !== 'text') throw new Error('no text in response');
 
     const raw = textBlock.text.trim().replace(/^```json\s*|\s*```$/g, '');
-    const parsed = JSON.parse(raw) as { competitors: Array<{ name: string; description: string }> };
+    const parsed = JSON.parse(raw) as { competitors: Array<{ name: string; description: string; domain?: string }> };
 
     if (!Array.isArray(parsed.competitors)) throw new Error('malformed response');
     return NextResponse.json({ competitors: parsed.competitors.slice(0, 5) });
