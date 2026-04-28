@@ -89,6 +89,7 @@ export default function ChatPage() {
   const [firstName, setFirstName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [greeting, setGreeting] = useState('');
+  const [suggestions, setSuggestions] = useState<string[] | null>(null);
   const [conversations, setConversations] = useState<ConversationListItem[]>([]);
   const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -125,6 +126,15 @@ export default function ChatPage() {
       if (data?.company_name) setCompanyName(data.company_name);
     });
     refreshConversations();
+
+    fetch('/api/chat/suggestions')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+          setSuggestions(data.suggestions.slice(0, 3));
+        }
+      })
+      .catch(() => {});
   }, [refreshConversations]);
 
   useEffect(() => {
@@ -349,11 +359,11 @@ export default function ChatPage() {
               </p>
               <div className="w-full">{composer}</div>
               <div className="mt-8 flex flex-wrap gap-2 justify-center">
-                {[
+                {(suggestions ?? [
                   'what should i pay attention to today?',
                   companyName ? `who's the biggest threat to ${companyName}?` : "who's the biggest threat this week?",
                   'what did my competitors ship recently?',
-                ].map((q) => (
+                ]).map((q) => (
                   <button
                     key={q}
                     type="button"
