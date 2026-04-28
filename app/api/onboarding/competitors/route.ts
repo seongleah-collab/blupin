@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-type Competitor = { name: string; description: string; addedBy?: 'ai' | 'user' };
+type Competitor = { name: string; description: string; domain?: string; addedBy?: 'ai' | 'user' };
+
+function cleanDomain(d: string | undefined | null): string | null {
+  if (!d) return null;
+  const trimmed = d.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+  return trimmed.length > 0 ? trimmed : null;
+}
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -16,6 +22,7 @@ export async function POST(req: Request) {
       user_id: user.id,
       name: c.name.trim(),
       notes: c.description?.trim() || null,
+      domain: cleanDomain(c.domain),
       layer: 'giant',
       added_by: c.addedBy === 'user' ? 'user' : 'system',
       status: 'active',

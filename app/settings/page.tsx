@@ -20,6 +20,7 @@ type CompetitorRow = {
   id: string;
   name: string;
   notes: string | null;
+  domain: string | null;
 };
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
@@ -43,7 +44,7 @@ export default function SettingsPage() {
   const [companyState, setCompanyState] = useState<SaveState>('idle');
   const [companyError, setCompanyError] = useState<string | null>(null);
 
-  const [competitors, setCompetitors] = useState<Array<Pick<CompetitorRow, 'name' | 'notes'>>>([]);
+  const [competitors, setCompetitors] = useState<Array<Pick<CompetitorRow, 'name' | 'notes' | 'domain'>>>([]);
   const [competitorsState, setCompetitorsState] = useState<SaveState>('idle');
   const [competitorsError, setCompetitorsError] = useState<string | null>(null);
 
@@ -66,7 +67,7 @@ export default function SettingsPage() {
           .single(),
         supabase
           .from('competitors')
-          .select('id, name, notes')
+          .select('id, name, notes, domain')
           .eq('user_id', user.id)
           .eq('status', 'active')
           .order('name', { ascending: true }),
@@ -82,6 +83,7 @@ export default function SettingsPage() {
         (competitorsRes.data ?? []).map((c) => ({
           name: c.name,
           notes: c.notes,
+          domain: c.domain ?? null,
         }))
       );
       setLoading(false);
@@ -122,6 +124,7 @@ export default function SettingsPage() {
         .map((c) => ({
           name: c.name.trim(),
           description: (c.notes ?? '').trim(),
+          domain: c.domain ?? undefined,
           addedBy: 'user' as const,
         }))
         .filter((c) => c.name.length > 0);
@@ -141,7 +144,7 @@ export default function SettingsPage() {
     }
   }
 
-  function updateCompetitor(idx: number, patch: Partial<{ name: string; notes: string | null }>) {
+  function updateCompetitor(idx: number, patch: Partial<{ name: string; notes: string | null; domain: string | null }>) {
     setCompetitors((prev) => prev.map((c, i) => (i === idx ? { ...c, ...patch } : c)));
   }
 
@@ -150,7 +153,7 @@ export default function SettingsPage() {
   }
 
   function addCompetitor() {
-    setCompetitors((prev) => [...prev, { name: '', notes: '' }]);
+    setCompetitors((prev) => [...prev, { name: '', notes: '', domain: null }]);
   }
 
   async function handleSignOut() {
@@ -270,7 +273,7 @@ export default function SettingsPage() {
                     placeholder="competitor name"
                     className="flex-1 px-3 py-2 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-[14px] focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
                   />
-                  <CompetitorLogo name={c.name} />
+                  <CompetitorLogo name={c.name} domain={c.domain ?? undefined} />
                   <button
                     type="button"
                     onClick={() => removeCompetitor(i)}
