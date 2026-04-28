@@ -29,5 +29,12 @@ export async function POST(req: Request) {
   const { error: insErr } = await supabase.from('competitors').insert(cleaned);
   if (insErr) return NextResponse.json({ error: insErr.message }, { status: 500 });
 
+  if (process.env.CRON_SECRET) {
+    const origin = new URL(req.url).origin;
+    fetch(`${origin}/api/cron/refresh?userId=${encodeURIComponent(user.id)}`, {
+      headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
+    }).catch((e) => console.error('[onboarding kickoff]', e));
+  }
+
   return NextResponse.json({ ok: true, count: cleaned.length });
 }
