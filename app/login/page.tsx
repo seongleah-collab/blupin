@@ -15,6 +15,9 @@ const fraunces = Fraunces({
 
 type Provider = 'google' | 'github'
 
+const googleEnabled = process.env.NEXT_PUBLIC_AUTH_GOOGLE_ENABLED === 'true'
+const githubEnabled = process.env.NEXT_PUBLIC_AUTH_GITHUB_ENABLED === 'true'
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -62,31 +65,37 @@ export default function LoginPage() {
         </div>
 
         <div className="rounded-2xl bg-white p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
-          <button
-            onClick={() => handleOAuth('google')}
-            disabled={loading || oauthLoading !== null}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full bg-white border border-slate-300 text-slate-900 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-3"
-          >
-            <GoogleIcon />
-            {oauthLoading === 'google' ? 'redirecting…' : 'continue with google'}
-          </button>
+          {googleEnabled && (
+            <button
+              onClick={() => handleOAuth('google')}
+              disabled={loading || oauthLoading !== null}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full bg-white border border-slate-300 text-slate-900 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-3"
+            >
+              <GoogleIcon />
+              {oauthLoading === 'google' ? 'redirecting…' : 'continue with google'}
+            </button>
+          )}
 
-          <button
-            onClick={() => handleOAuth('github')}
-            disabled={loading || oauthLoading !== null}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full bg-slate-900 text-white font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <GitHubIcon />
-            {oauthLoading === 'github' ? 'redirecting…' : 'continue with github'}
-          </button>
+          {githubEnabled && (
+            <button
+              onClick={() => handleOAuth('github')}
+              disabled={loading || oauthLoading !== null}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full bg-slate-900 text-white font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <GitHubIcon />
+              {oauthLoading === 'github' ? 'redirecting…' : 'continue with github'}
+            </button>
+          )}
 
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-slate-200" />
-            <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-              or with email
-            </span>
-            <div className="flex-1 h-px bg-slate-200" />
-          </div>
+          {(googleEnabled || githubEnabled) && (
+            <div className="flex items-center gap-3 my-6">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                or with email
+              </span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+          )}
 
           <input
             type="email"
