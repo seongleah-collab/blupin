@@ -76,20 +76,20 @@ function ProfileMenu({
         aria-expanded={open}
         className={
           collapsed
-            ? 'w-9 h-9 rounded-full bg-neutral-900 text-white text-[13px] font-medium flex items-center justify-center hover:opacity-90 transition-opacity'
-            : 'w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-neutral-200 transition-colors text-left'
+            ? 'w-9 h-9 rounded-full bg-neutral-900 dark:bg-neutral-200 text-white dark:text-neutral-900 text-[13px] font-medium flex items-center justify-center hover:opacity-90 transition-opacity'
+            : 'w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors text-left'
         }
       >
-        <span className="w-7 h-7 rounded-full bg-neutral-900 text-white text-[12px] font-medium flex items-center justify-center shrink-0">
+        <span className="w-7 h-7 rounded-full bg-neutral-900 dark:bg-neutral-200 text-white dark:text-neutral-900 text-[12px] font-medium flex items-center justify-center shrink-0">
           {initial}
         </span>
         {!collapsed && (
           <span className="flex-1 min-w-0">
-            <span className="block text-[13px] font-medium text-neutral-900 truncate lowercase">
+            <span className="block text-[13px] font-medium text-neutral-900 dark:text-neutral-100 truncate lowercase">
               {label}
             </span>
             {user.email && (
-              <span className="block text-[11px] text-neutral-500 truncate">{user.email}</span>
+              <span className="block text-[11px] text-neutral-500 dark:text-neutral-400 truncate">{user.email}</span>
             )}
           </span>
         )}
@@ -98,18 +98,18 @@ function ProfileMenu({
       {open && (
         <div
           role="menu"
-          className={`absolute z-20 bottom-full mb-2 w-56 rounded-xl border border-neutral-200 bg-white shadow-[0_8px_28px_-8px_rgba(0,0,0,0.18)] py-1 ${
+          className={`absolute z-20 bottom-full mb-2 w-56 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-[0_8px_28px_-8px_rgba(0,0,0,0.18)] py-1 ${
             collapsed ? 'left-0' : 'left-0 right-0 w-auto'
           }`}
         >
-          <div className="px-3 py-2 border-b border-neutral-100">
-            <div className="text-[12px] text-neutral-500 truncate">signed in as</div>
-            <div className="text-[13px] text-neutral-900 truncate">{user.email ?? 'unknown'}</div>
+          <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="text-[12px] text-neutral-500 dark:text-neutral-400 truncate">signed in as</div>
+            <div className="text-[13px] text-neutral-900 dark:text-neutral-100 truncate">{user.email ?? 'unknown'}</div>
           </div>
           <a
             href="/settings"
             role="menuitem"
-            className="flex items-center gap-2 px-3 py-2 text-[13px] text-neutral-800 hover:bg-neutral-100"
+            className="flex items-center gap-2 px-3 py-2 text-[13px] text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3" />
@@ -162,12 +162,12 @@ export default function Sidebar({
 }) {
   if (collapsed) {
     return (
-      <aside className="h-screen w-12 border-r border-neutral-200 bg-neutral-50 flex flex-col items-center py-4 gap-3 shrink-0">
+      <aside className="h-screen w-12 border-r border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center py-4 gap-3 shrink-0">
         <button
           type="button"
           onClick={onToggle}
           aria-label="open sidebar"
-          className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-200 text-neutral-600"
+          className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="12" x2="21" y2="12" />
@@ -179,7 +179,7 @@ export default function Sidebar({
           type="button"
           onClick={onNewChat}
           aria-label="new chat"
-          className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-200 text-neutral-600"
+          className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 5v14" />
@@ -201,14 +201,14 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="h-screen w-64 border-r border-neutral-200 bg-neutral-50 flex flex-col shrink-0">
+    <aside className="h-screen w-64 border-r border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-col shrink-0">
       <div className="px-3 py-3 flex items-center justify-between">
-        <Wordmark className="text-base font-medium tracking-tight text-neutral-900 px-2" />
+        <Wordmark className="text-base font-medium tracking-tight text-neutral-900 dark:text-neutral-100 px-2" />
         <button
           type="button"
           onClick={onToggle}
           aria-label="collapse sidebar"
-          className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-200 text-neutral-500"
+          className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
@@ -220,7 +220,7 @@ export default function Sidebar({
         <button
           type="button"
           onClick={onNewChat}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-800 hover:bg-neutral-200 transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 5v14" />
@@ -232,13 +232,13 @@ export default function Sidebar({
 
       <nav className="flex-1 overflow-y-auto px-2 pb-3">
         {conversations.length === 0 ? (
-          <div className="px-3 py-6 text-[12px] text-neutral-400 text-center">
+          <div className="px-3 py-6 text-[12px] text-neutral-400 dark:text-neutral-500 text-center">
             no past chats yet
           </div>
         ) : (
           GROUP_ORDER.filter((g) => grouped.has(g)).map((g) => (
             <div key={g} className="mt-3 first:mt-1">
-              <div className="px-3 pb-1 text-[11px] uppercase tracking-wide text-neutral-400">
+              <div className="px-3 pb-1 text-[11px] uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
                 {g}
               </div>
               <ul>
@@ -251,8 +251,8 @@ export default function Sidebar({
                         onClick={() => onSelect(c.id)}
                         className={`w-full text-left pl-3 pr-8 py-2 rounded-lg text-[13px] truncate transition-colors ${
                           isActive
-                            ? 'bg-neutral-200 text-neutral-900'
-                            : 'text-neutral-700 hover:bg-neutral-200/70'
+                            ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+                            : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200/70 dark:hover:bg-neutral-800/70'
                         }`}
                         title={c.title ?? 'untitled chat'}
                       >
@@ -265,7 +265,7 @@ export default function Sidebar({
                           if (confirm('delete this chat?')) onDelete(c.id);
                         }}
                         aria-label="delete chat"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded flex items-center justify-center text-neutral-400 hover:text-red-600 hover:bg-neutral-300/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded flex items-center justify-center text-neutral-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-neutral-300/60 dark:hover:bg-neutral-700/60 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="3 6 5 6 21 6" />
@@ -283,7 +283,7 @@ export default function Sidebar({
         )}
       </nav>
 
-      <div className="border-t border-neutral-200 p-2">
+      <div className="border-t border-neutral-200 dark:border-neutral-800 p-2">
         <ProfileMenu user={user} onSignOut={onSignOut} collapsed={false} />
       </div>
     </aside>

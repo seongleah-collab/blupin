@@ -262,7 +262,7 @@ export default function ChatPage() {
 
   const composer = (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="relative w-full rounded-3xl border border-neutral-200 bg-white shadow-[0_2px_24px_-12px_rgba(0,0,0,0.15)] focus-within:border-neutral-400 transition-colors">
+      <div className="relative w-full rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-[0_2px_24px_-12px_rgba(0,0,0,0.15)] focus-within:border-neutral-400 dark:focus-within:border-neutral-600 transition-colors">
         <textarea
           ref={textareaRef}
           value={input}
@@ -271,13 +271,13 @@ export default function ChatPage() {
           placeholder="ask blupin…"
           disabled={isStreaming}
           rows={1}
-          className="w-full resize-none bg-transparent px-5 pt-4 pb-14 text-[15px] text-neutral-900 placeholder:text-neutral-400 focus:outline-none disabled:opacity-60 leading-relaxed"
+          className="w-full resize-none bg-transparent px-5 pt-4 pb-14 text-[15px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none disabled:opacity-60 leading-relaxed"
         />
         <button
           type="submit"
           disabled={!input.trim() || isStreaming}
           aria-label="send"
-          className="absolute right-3 bottom-3 w-9 h-9 rounded-full bg-neutral-900 text-white flex items-center justify-center hover:bg-neutral-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          className="absolute right-3 bottom-3 w-9 h-9 rounded-full bg-neutral-900 dark:bg-neutral-200 text-white dark:text-neutral-900 flex items-center justify-center hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 19V5" />
@@ -289,7 +289,7 @@ export default function ChatPage() {
   );
 
   return (
-    <div className="flex h-screen bg-white text-neutral-900">
+    <div className="flex h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
       <style>{`
         @keyframes blu-fade-up {
           from { opacity: 0; transform: translateY(8px); }
@@ -324,14 +324,14 @@ export default function ChatPage() {
       <div className="flex-1 flex flex-col min-w-0">
         {sidebarCollapsed && (
           <header className="px-6 py-4 flex items-center">
-            <Wordmark className="text-base font-medium tracking-tight text-neutral-900" />
+            <Wordmark className="text-base font-medium tracking-tight text-neutral-900 dark:text-neutral-100" />
           </header>
         )}
 
         {isEmpty ? (
           <main className="flex-1 flex flex-col items-center justify-center px-6 blu-pane">
             <div className="w-full max-w-2xl flex flex-col items-center text-center">
-              <h1 className="text-4xl md:text-5xl text-neutral-900 leading-tight mb-4">
+              <h1 className="text-4xl md:text-5xl text-neutral-900 dark:text-neutral-100 leading-tight mb-4">
                 {greeting && (
                   <>
                     good {greeting},{' '}
@@ -342,9 +342,9 @@ export default function ChatPage() {
                   </>
                 )}
               </h1>
-              <p className="text-base text-neutral-500 mb-10 max-w-md leading-relaxed">
+              <p className="text-base text-neutral-500 dark:text-neutral-400 mb-10 max-w-md leading-relaxed">
                 {companyName
-                  ? <>here&apos;s what&apos;s moving in <span className="text-neutral-700 font-medium">{companyName}</span>&apos;s space — ask me anything.</>
+                  ? <>here&apos;s what&apos;s moving in <span className="text-neutral-700 dark:text-neutral-200 font-medium">{companyName}</span>&apos;s space — ask me anything.</>
                   : <>here&apos;s what&apos;s moving in your space — ask me anything.</>}
               </p>
               <div className="w-full">{composer}</div>
@@ -359,7 +359,7 @@ export default function ChatPage() {
                     type="button"
                     onClick={() => sendMessage(q)}
                     disabled={isStreaming}
-                    className="px-4 py-2 rounded-full border border-neutral-200 text-[13px] text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 rounded-full border border-neutral-200 dark:border-neutral-800 text-[13px] text-neutral-600 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-600 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {q}
                   </button>
@@ -379,15 +379,15 @@ export default function ChatPage() {
                       key={i}
                       className={`blu-msg ${
                         m.role === 'user'
-                          ? 'ml-auto bg-neutral-100 text-neutral-900 px-4 py-2.5 rounded-2xl max-w-[85%] w-fit'
-                          : 'text-neutral-900 whitespace-pre-wrap leading-relaxed'
+                          ? 'ml-auto bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 px-4 py-2.5 rounded-2xl max-w-[85%] w-fit'
+                          : 'text-neutral-900 dark:text-neutral-100 whitespace-pre-wrap leading-relaxed'
                       }`}
                     >
                       {isAssistantStreamingNow ? (
                         <span className="inline-flex items-center gap-1.5 py-1.5">
-                          <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400" style={{ animationDelay: '0s' }} />
-                          <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400" style={{ animationDelay: '0.15s' }} />
-                          <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400" style={{ animationDelay: '0.3s' }} />
+                          <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" style={{ animationDelay: '0s' }} />
+                          <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" style={{ animationDelay: '0.15s' }} />
+                          <span className="blu-dot w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" style={{ animationDelay: '0.3s' }} />
                         </span>
                       ) : m.role === 'assistant' ? (
                         renderAssistantContent(m.content)
@@ -401,7 +401,7 @@ export default function ChatPage() {
               </div>
             </main>
 
-            <div className="bg-white">
+            <div className="bg-white dark:bg-neutral-950">
               <div className="max-w-2xl mx-auto px-6 pb-6 pt-2">{composer}</div>
             </div>
           </>

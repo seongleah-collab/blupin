@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/client';
 import Wordmark from '@/app/components/Wordmark';
+import ThemeToggle from '@/app/components/ThemeToggle';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -159,21 +160,21 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-neutral-900 flex items-center justify-center">
-        <span className="text-sm text-neutral-400">loading…</span>
+      <div className="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex items-center justify-center">
+        <span className="text-sm text-neutral-400 dark:text-neutral-500">loading…</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
-      <header className="px-6 py-4 flex items-center justify-between border-b border-neutral-100">
+    <div className="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
+      <header className="px-6 py-4 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800">
         <Link href="/chat" className="flex items-center gap-2">
-          <Wordmark className="text-base font-medium tracking-tight text-neutral-900" />
+          <Wordmark className="text-base font-medium tracking-tight text-neutral-900 dark:text-neutral-100" />
         </Link>
         <Link
           href="/chat"
-          className="text-[13px] text-neutral-500 hover:text-neutral-900 transition-colors"
+          className="text-[13px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
         >
           back to chat
         </Link>
@@ -183,41 +184,51 @@ export default function SettingsPage() {
         <h1 className="text-3xl md:text-4xl mb-2 leading-tight">
           your <span className={`${fraunces.className} italic font-medium`}>settings</span>
         </h1>
-        <p className="text-neutral-500 mb-10 text-[14px]">
+        <p className="text-neutral-500 dark:text-neutral-400 mb-10 text-[14px]">
           update what blupin knows about you and who you&apos;re watching.
         </p>
+
+        <section className="mb-12">
+          <div className="flex items-baseline justify-between mb-3">
+            <h2 className="text-lg font-medium">appearance</h2>
+          </div>
+          <p className="text-[13px] text-neutral-500 dark:text-neutral-400 mb-4">
+            pick a theme. system follows your os.
+          </p>
+          <ThemeToggle />
+        </section>
 
         <section className="mb-12">
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="text-lg font-medium">company</h2>
             <Status state={companyState} error={companyError} />
           </div>
-          <p className="text-[13px] text-neutral-500 mb-4">
+          <p className="text-[13px] text-neutral-500 dark:text-neutral-400 mb-4">
             this is the lens blupin uses for every threat call.
           </p>
           <form onSubmit={saveCompany} className="space-y-4">
             <div>
-              <label className="block text-[12px] uppercase tracking-wide text-neutral-500 mb-1.5">
+              <label className="block text-[12px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mb-1.5">
                 name
               </label>
               <input
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-[14px] focus:outline-none focus:border-neutral-400 transition-colors"
+                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-[14px] focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
                 placeholder="e.g. noted"
                 required
               />
             </div>
             <div>
-              <label className="block text-[12px] uppercase tracking-wide text-neutral-500 mb-1.5">
+              <label className="block text-[12px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mb-1.5">
                 description
               </label>
               <textarea
                 value={companyDescription}
                 onChange={(e) => setCompanyDescription(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-[14px] focus:outline-none focus:border-neutral-400 transition-colors resize-none leading-relaxed"
+                className="w-full px-3 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-[14px] focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors resize-none leading-relaxed"
                 placeholder="what does your product do, and for whom?"
                 required
               />
@@ -226,7 +237,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={companyState === 'saving'}
-                className="px-4 py-2 rounded-lg bg-neutral-900 text-white text-[13px] font-medium hover:bg-neutral-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-lg bg-neutral-900 dark:bg-neutral-200 text-white dark:text-neutral-900 text-[13px] font-medium hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 save company
               </button>
@@ -239,29 +250,29 @@ export default function SettingsPage() {
             <h2 className="text-lg font-medium">competitors</h2>
             <Status state={competitorsState} error={competitorsError} />
           </div>
-          <p className="text-[13px] text-neutral-500 mb-4">
+          <p className="text-[13px] text-neutral-500 dark:text-neutral-400 mb-4">
             who blupin actively watches for you. removing one stops it from being scored.
           </p>
           <div className="space-y-3">
             {competitors.length === 0 && (
-              <div className="px-4 py-6 rounded-lg border border-dashed border-neutral-200 text-center text-[13px] text-neutral-500">
+              <div className="px-4 py-6 rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-[13px] text-neutral-500 dark:text-neutral-400">
                 no competitors tracked yet.
               </div>
             )}
             {competitors.map((c, i) => (
-              <div key={i} className="rounded-lg border border-neutral-200 p-3 space-y-2">
+              <div key={i} className="rounded-lg border border-neutral-200 dark:border-neutral-800 p-3 space-y-2">
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={c.name}
                     onChange={(e) => updateCompetitor(i, { name: e.target.value })}
                     placeholder="competitor name"
-                    className="flex-1 px-3 py-2 rounded-md border border-neutral-200 text-[14px] focus:outline-none focus:border-neutral-400 transition-colors"
+                    className="flex-1 px-3 py-2 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-[14px] focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => removeCompetitor(i)}
-                    className="text-[12px] uppercase tracking-wide text-neutral-400 hover:text-red-600 px-2 py-1 transition-colors"
+                    className="text-[12px] uppercase tracking-wide text-neutral-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 px-2 py-1 transition-colors"
                   >
                     remove
                   </button>
@@ -271,14 +282,14 @@ export default function SettingsPage() {
                   onChange={(e) => updateCompetitor(i, { notes: e.target.value })}
                   rows={2}
                   placeholder="short note — what they do"
-                  className="w-full px-3 py-2 rounded-md border border-neutral-200 text-[13px] text-neutral-700 focus:outline-none focus:border-neutral-400 transition-colors resize-none leading-relaxed"
+                  className="w-full px-3 py-2 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-[13px] text-neutral-700 dark:text-neutral-200 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors resize-none leading-relaxed"
                 />
               </div>
             ))}
             <button
               type="button"
               onClick={addCompetitor}
-              className="w-full py-2.5 rounded-lg border border-dashed border-neutral-300 text-[13px] text-neutral-600 hover:border-neutral-500 hover:text-neutral-900 transition-colors"
+              className="w-full py-2.5 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700 text-[13px] text-neutral-600 dark:text-neutral-300 hover:border-neutral-500 dark:hover:border-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
             >
               + add competitor
             </button>
@@ -287,7 +298,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={saveCompetitors}
                 disabled={competitorsState === 'saving'}
-                className="px-4 py-2 rounded-lg bg-neutral-900 text-white text-[13px] font-medium hover:bg-neutral-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-lg bg-neutral-900 dark:bg-neutral-200 text-white dark:text-neutral-900 text-[13px] font-medium hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 save competitors
               </button>
@@ -297,22 +308,22 @@ export default function SettingsPage() {
 
         <section className="mb-16">
           <h2 className="text-lg font-medium mb-3">account</h2>
-          <div className="rounded-lg border border-neutral-200 divide-y divide-neutral-100">
+          <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
             <div className="px-4 py-3 flex items-center justify-between">
               <div>
-                <div className="text-[12px] uppercase tracking-wide text-neutral-500">email</div>
-                <div className="text-[14px] text-neutral-900">{email ?? '—'}</div>
+                <div className="text-[12px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400">email</div>
+                <div className="text-[14px] text-neutral-900 dark:text-neutral-100">{email ?? '—'}</div>
               </div>
             </div>
             <div className="px-4 py-3 flex items-center justify-between">
               <div>
-                <div className="text-[14px] text-neutral-900">sign out</div>
-                <div className="text-[12px] text-neutral-500">end your session on this device.</div>
+                <div className="text-[14px] text-neutral-900 dark:text-neutral-100">sign out</div>
+                <div className="text-[12px] text-neutral-500 dark:text-neutral-400">end your session on this device.</div>
               </div>
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="px-3 py-1.5 rounded-md border border-neutral-200 text-[13px] text-neutral-700 hover:bg-neutral-100 transition-colors"
+                className="px-3 py-1.5 rounded-md border border-neutral-200 dark:border-neutral-800 text-[13px] text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
                 sign out
               </button>
