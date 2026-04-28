@@ -46,7 +46,7 @@ export default function CompetitorLogo({
     return (
       <div
         style={dim}
-        className="rounded-lg flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm font-semibold text-neutral-500 dark:text-neutral-400 shrink-0"
+        className="rounded-lg flex items-center justify-center bg-neutral-900/5 dark:bg-white/10 backdrop-blur-sm border border-neutral-900/10 dark:border-white/15 text-sm font-semibold text-neutral-500 dark:text-neutral-400 shrink-0"
       >
         {initial}
       </div>
@@ -60,7 +60,7 @@ export default function CompetitorLogo({
       alt=""
       style={dim}
       onError={() => setIdx((i) => i + 1)}
-      className="rounded-lg object-contain bg-white border border-neutral-200 dark:border-neutral-300 shrink-0"
+      className="rounded-lg object-contain bg-white/40 dark:bg-white/10 backdrop-blur-sm border border-neutral-900/10 dark:border-white/15 shrink-0"
     />
   );
 }
