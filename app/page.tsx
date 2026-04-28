@@ -1,28 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Fraunces, Inter } from 'next/font/google';
 import SiteNav from './components/SiteNav';
 import SkyBackdrop from './components/SkyBackdrop';
+import Wordmark from './components/Wordmark';
 
-type FaqItem = { q: string; a: string };
+type FaqItem = { q: ReactNode; a: ReactNode };
 
 const faqs: FaqItem[] = [
   {
-    q: 'what is blupin?',
-    a: 'blupin is competitive intelligence that watches your competitors, scores what actually threatens your product, and tells you what to do next. it runs in the background so you can keep shipping.',
+    q: <>what is <Wordmark />?</>,
+    a: <><Wordmark /> is competitive intelligence that watches your competitors, scores what actually threatens your product, and tells you what to do next. it runs in the background so you can keep shipping.</>,
   },
   {
-    q: 'how does blupin find competitors?',
+    q: <>how does <Wordmark /> find competitors?</>,
     a: "you tell us what you're building in one sentence. we pull from product hunt, hacker news, reddit, and a growing list of sources every hour — then match launches to your space.",
   },
   {
     q: 'how is this different from crayon, kompyte, or similarweb?',
-    a: 'those tools dump a firehose of updates into a dashboard nobody reads. blupin is built around a single question — "what should i do this week?" — and answers it in a sentence, not a report.',
+    a: <>those tools dump a firehose of updates into a dashboard nobody reads. <Wordmark /> is built around a single question — &ldquo;what should i do this week?&rdquo; — and answers it in a sentence, not a report.</>,
   },
   {
-    q: 'when will blupin launch?',
+    q: <>when will <Wordmark /> launch?</>,
     a: "we're rolling out to the waitlist in small batches over the coming weeks. join the waitlist and we'll reach out when your spot opens up.",
   },
   {
@@ -34,7 +35,7 @@ const faqs: FaqItem[] = [
     a: 'we only store what you give us — your product description, your email, and the sources you want watched. no scraping of your codebase, no third-party trackers on this site.',
   },
   {
-    q: 'who is blupin for?',
+    q: <>who is <Wordmark /> for?</>,
     a: "early-stage founders and small product teams who can't afford a full-time market researcher but also can't afford to miss a threat that ships next week.",
   },
   {
@@ -186,7 +187,7 @@ export default function Home() {
                 <span className="">working quietly in the background.</span>
               </h2>
               <p className="mt-5 text-base text-slate-600 max-w-xl leading-relaxed">
-                blupin watches, scores, and advises — so you spend less time tracking competitors and more time shipping.
+                <Wordmark /> watches, scores, and advises — so you spend less time tracking competitors and more time shipping.
               </p>
             </div>
 
@@ -416,7 +417,7 @@ export default function Home() {
               {faqs.map((faq, i) => {
                 const isOpen = openFaq === i;
                 return (
-                  <div key={faq.q}>
+                  <div key={i}>
                     <button
                       onClick={() => setOpenFaq(isOpen ? null : i)}
                       className="w-full flex items-center justify-between gap-6 px-6 py-5 text-left hover:bg-slate-50 transition-colors"

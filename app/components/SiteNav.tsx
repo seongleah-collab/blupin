@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Inter } from 'next/font/google';
+import Wordmark from './Wordmark';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,9 +22,9 @@ export default function SiteNav({ links = defaultLinks }: { links?: NavLink[] })
       <div className="w-full px-8 sm:px-12 py-6 flex items-center gap-10">
         <Link
           href="/"
-          className="text-2xl font-medium lowercase tracking-tight text-white font-['Times_New_Roman'] drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+          className="text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
         >
-          blupin<span className="text-blue-200">.</span>
+          <Wordmark className="text-2xl font-medium tracking-tight" dotClassName="text-blue-200" />
         </Link>
 
         <div className="hidden sm:flex items-center gap-10">

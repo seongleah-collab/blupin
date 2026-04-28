@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Wordmark from '@/app/components/Wordmark'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="max-w-md w-full">
-        <h1 className="text-3xl italic mb-2" style={{fontFamily:'Fraunces'}}>welcome to blupin</h1>
+        <h1 className="text-3xl mb-2">welcome to <Wordmark className="font-medium" /></h1>
         <p className="text-gray-600 mb-6">create your account</p>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
           placeholder="you@company.com"

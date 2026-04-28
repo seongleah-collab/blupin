@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { Fraunces } from 'next/font/google'
+import Wordmark from '@/app/components/Wordmark'
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -18,7 +19,7 @@ export default function DonePage() {
           you&apos;re in.
         </h1>
         <p className="text-white/90 mb-8 leading-relaxed">
-          your watch list is live. blupin runs in the background — ask anything.
+          your watch list is live. <Wordmark className="text-white" dotClassName="text-blue-300" /> runs in the background — ask anything.
         </p>
         <Link
           href="/chat"

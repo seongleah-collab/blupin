@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/client';
+import Wordmark from '@/app/components/Wordmark';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -20,11 +21,10 @@ function nameFromEmail(email: string | undefined | null): string {
   return first.toLowerCase();
 }
 
-function severityColor(n: number): string {
+function severityHue(n: number): number {
   const clamped = Math.max(1, Math.min(10, n));
   // hsl hue: 50 (yellow) at 1 → 0 (red) at 10
-  const hue = 50 - ((clamped - 1) * 50) / 9;
-  return `hsl(${hue}, 88%, 50%)`;
+  return 50 - ((clamped - 1) * 50) / 9;
 }
 
 function renderAssistantContent(content: string): React.ReactNode[] {
@@ -38,14 +38,30 @@ function renderAssistantContent(content: string): React.ReactNode[] {
       parts.push(<span key={key++}>{content.slice(lastIndex, match.index)}</span>);
     }
     const n = parseInt(match[1], 10);
+    const hue = severityHue(n);
     parts.push(
-      <span key={key++} className="inline-flex items-center gap-2 align-middle mr-1">
+      <span
+        key={key++}
+        className="inline-flex items-center gap-1.5 align-middle mr-2 px-2.5 py-1 rounded-full border"
+        style={{
+          backgroundColor: `hsla(${hue}, 88%, 52%, 0.1)`,
+          borderColor: `hsla(${hue}, 88%, 52%, 0.3)`,
+        }}
+      >
         <span
-          className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-          style={{ backgroundColor: severityColor(n), boxShadow: `0 0 8px ${severityColor(n)}55` }}
+          className="inline-block w-2 h-2 rounded-full shrink-0"
+          style={{
+            backgroundColor: `hsl(${hue}, 88%, 52%)`,
+            boxShadow: `0 0 8px hsla(${hue}, 88%, 52%, 0.8)`,
+          }}
           aria-hidden
         />
-        <span className="text-[12px] font-semibold text-neutral-700 tabular-nums">{n}/10</span>
+        <span
+          className="text-[11px] font-semibold tabular-nums tracking-wide"
+          style={{ color: `hsl(${hue}, 70%, 32%)` }}
+        >
+          {n}/10
+        </span>
       </span>
     );
     lastIndex = regex.lastIndex;
@@ -223,7 +239,7 @@ export default function ChatPage() {
       `}</style>
 
       <header className="px-6 py-4 flex items-center">
-        <span className="text-sm font-semibold tracking-tight text-neutral-900">blupin</span>
+        <Wordmark className="text-base font-medium tracking-tight text-neutral-900" />
       </header>
 
       {isEmpty ? (
