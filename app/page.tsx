@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Fraunces, Inter } from 'next/font/google';
 import SiteNav from './components/SiteNav';
 import SkyBackdrop from './components/SkyBackdrop';
@@ -55,7 +56,9 @@ const inter = Inter({
 });
 
 export default function Home() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -69,11 +72,12 @@ export default function Home() {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (data.ok) {
         setStatus('success');
+        router.push('/onboarding');
       } else {
         setStatus('error');
         setErrorMsg(data.error || 'something went wrong');
@@ -114,10 +118,10 @@ export default function Home() {
           {status === 'success' ? (
             <div className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/25 backdrop-blur-xl text-white font-medium text-sm border border-white/60 shadow-xl shadow-indigo-500/20">
               <span className="text-green-200">✓</span>
-              check your email — we sent you a link to continue.
+              taking you in…
             </div>
           ) : (
-            <form id="waitlist-form" onSubmit={handleSubmit} className="w-full max-w-md flex flex-col sm:flex-row gap-2">
+            <form id="waitlist-form" onSubmit={handleSubmit} className="w-full max-w-md flex flex-col gap-2">
               <input
                 type="email"
                 required
@@ -127,13 +131,25 @@ export default function Home() {
                 disabled={status === 'loading'}
                 className="flex-1 px-4 py-3 rounded-full bg-white/20 backdrop-blur-xl border border-white/60 text-white font-medium placeholder:text-white/85 focus:outline-none focus:border-white transition-colors"
               />
-              <button
-                type="submit"
-                disabled={status === 'loading' || !email}
-                className="px-6 py-3 rounded-full bg-white text-indigo-950 font-semibold hover:bg-white/95 transition-colors disabled:opacity-50 shadow-lg shadow-indigo-500/20"
-              >
-                {status === 'loading' ? 'adding…' : 'join waitlist'}
-              </button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="password (6+ characters)"
+                  disabled={status === 'loading'}
+                  className="flex-1 px-4 py-3 rounded-full bg-white/20 backdrop-blur-xl border border-white/60 text-white font-medium placeholder:text-white/85 focus:outline-none focus:border-white transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={status === 'loading' || !email || !password}
+                  className="px-6 py-3 rounded-full bg-white text-indigo-950 font-semibold hover:bg-white/95 transition-colors disabled:opacity-50 shadow-lg shadow-indigo-500/20"
+                >
+                  {status === 'loading' ? 'creating…' : 'get started'}
+                </button>
+              </div>
             </form>
           )}
 
@@ -458,11 +474,11 @@ export default function Home() {
               <div className="flex flex-col items-center gap-3">
                 <div className="flex items-center gap-2 px-5 py-3 rounded-full bg-slate-900 text-white text-sm shadow-lg shadow-slate-900/10">
                   <span className="text-green-300">✓</span>
-                  check your email — we sent you a link to continue.
+                  taking you in…
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col sm:flex-row gap-2">
+              <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col gap-2">
                 <input
                   type="email"
                   required
@@ -472,13 +488,25 @@ export default function Home() {
                   disabled={status === 'loading'}
                   className="flex-1 px-4 py-3 rounded-full bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
                 />
-                <button
-                  type="submit"
-                  disabled={status === 'loading' || !email}
-                  className="px-6 py-3 rounded-full bg-slate-900 text-white font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 shadow-lg shadow-slate-900/10"
-                >
-                  {status === 'loading' ? 'adding…' : 'join waitlist'}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="password (6+ characters)"
+                    disabled={status === 'loading'}
+                    className="flex-1 px-4 py-3 rounded-full bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
+                  />
+                  <button
+                    type="submit"
+                    disabled={status === 'loading' || !email || !password}
+                    className="px-6 py-3 rounded-full bg-slate-900 text-white font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 shadow-lg shadow-slate-900/10"
+                  >
+                    {status === 'loading' ? 'creating…' : 'get started'}
+                  </button>
+                </div>
               </form>
             )}
 

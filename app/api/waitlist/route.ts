@@ -3,10 +3,13 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email, password } = await req.json();
 
     if (!email || typeof email !== 'string') {
       return NextResponse.json({ ok: false, error: 'email required' }, { status: 400 });
+    }
+    if (!password || typeof password !== 'string' || password.length < 6) {
+      return NextResponse.json({ ok: false, error: 'password must be at least 6 characters' }, { status: 400 });
     }
 
     const clean = email.trim().toLowerCase();
@@ -17,17 +20,10 @@ export async function POST(req: Request) {
 
     const supabase = await createClient();
 
-    // send magic link — this also creates the auth user on first sign-in
-    const origin = req.headers.get('origin') ?? 'http://localhost:3000';
-    const { error } = await supabase.auth.signInWithOtp({
-      email: clean,
-      options: {
-        emailRedirectTo: `${origin}/auth/callback`,
-      },
-    });
+    const { error } = await supabase.auth.signUp({ email: clean, password });
 
     if (error) {
-      console.error('magic link error:', error);
+      console.error('signup error:', error);
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
     }
 
