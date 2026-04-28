@@ -71,7 +71,7 @@ export default function CompetitorsPage() {
   return (
     <div className="min-h-screen flex items-start justify-center p-6 py-16">
       <div className="max-w-2xl w-full">
-        <p className="text-sm text-gray-500 mb-2">step 2 of 3</p>
+        <p className="text-sm text-gray-500 mb-2">step 2 of 2</p>
         <h1 className="text-3xl italic mb-2" style={{fontFamily:'Fraunces'}}>your competitors</h1>
         <p className="text-gray-600 mb-6">we suggested some — edit, remove, or add your own. you can change these later.</p>
 

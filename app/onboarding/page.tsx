@@ -45,7 +45,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="max-w-lg w-full">
-        <p className="text-sm text-gray-500 mb-2">step 1 of 3</p>
+        <p className="text-sm text-gray-500 mb-2">step 1 of 2</p>
         <h1 className="text-3xl italic mb-2" style={{fontFamily:'Fraunces'}}>tell us about your company</h1>
         <p className="text-gray-600 mb-6">we'll use this to find your competitors.</p>
         <label className="block text-sm font-medium mb-1">company name</label>
