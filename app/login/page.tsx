@@ -15,7 +15,7 @@ const fraunces = Fraunces({
 
 type Provider = 'google' | 'github'
 
-const googleEnabled = process.env.NEXT_PUBLIC_AUTH_GOOGLE_ENABLED === 'true'
+const googleEnabled = true
 const githubEnabled = process.env.NEXT_PUBLIC_AUTH_GITHUB_ENABLED === 'true'
 
 export default function LoginPage() {
