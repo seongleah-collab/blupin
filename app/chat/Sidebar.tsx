@@ -124,7 +124,7 @@ function ProfileMenu({
               setOpen(false);
               onSignOut();
             }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-neutral-800 hover:bg-neutral-100 text-left"
+            className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-neutral-800 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left transition-colors"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
