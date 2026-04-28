@@ -38,13 +38,40 @@ export default function LoginPage() {
   const handleOAuth = async (provider: Provider) => {
     setOauthLoading(provider); setError(null)
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        skipBrowserRedirect: true,
+      },
     })
-    if (error) {
+    if (error || !data?.url) {
       setOauthLoading(null)
-      setError(error.message)
+      setError(error?.message || 'could not start sign-in')
+      return
+    }
+
+    // preflight: probe the authorize URL. if supabase 400s with
+    // "provider not enabled", show a friendly inline error instead of
+    // letting the browser navigate to the raw JSON page.
+    try {
+      const res = await fetch(data.url)
+      if (res.type === 'opaque' || res.ok) {
+        window.location.href = data.url
+        return
+      }
+      const body = await res.json().catch(() => null) as { msg?: string } | null
+      setOauthLoading(null)
+      const msg = body?.msg || ''
+      if (msg.toLowerCase().includes('not enabled')) {
+        setError(`${provider} sign-in isn't fully set up yet — please use email for now.`)
+      } else {
+        setError(msg || 'sign-in failed — try email instead.')
+      }
+    } catch {
+      // CORS error from supabase 302→google means the provider IS enabled;
+      // browser fetch can't follow cross-origin auth pages, so navigate normally.
+      window.location.href = data.url
     }
   }
 
