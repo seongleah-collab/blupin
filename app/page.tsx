@@ -6,7 +6,6 @@ import { Fraunces, Inter } from 'next/font/google';
 import SiteNav from './components/SiteNav';
 import SkyBackdrop from './components/SkyBackdrop';
 import Wordmark from './components/Wordmark';
-import { createClient } from '@/lib/supabase/client';
 
 type FaqItem = { q: ReactNode; a: ReactNode };
 
@@ -65,29 +64,6 @@ export default function Home() {
   const [errorMsg, setErrorMsg] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  const [signInEmail, setSignInEmail] = useState('');
-  const [signInPassword, setSignInPassword] = useState('');
-  const [signInStatus, setSignInStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [signInError, setSignInError] = useState('');
-
-  async function handleSignIn(e: React.FormEvent) {
-    e.preventDefault();
-    if (signInStatus === 'loading') return;
-    setSignInStatus('loading');
-    setSignInError('');
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email: signInEmail.trim(),
-      password: signInPassword,
-    });
-    if (error) {
-      setSignInStatus('error');
-      setSignInError(error.message);
-      return;
-    }
-    setSignInStatus('success');
-    router.push('/chat');
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -123,7 +99,7 @@ export default function Home() {
           { href: '#faq', label: 'faq' },
           { href: '#waitlist', label: 'join waitlist' },
         ]}
-        rightLink={{ href: '#signin', label: 'sign in' }}
+        rightLink={{ href: '/login', label: 'sign in' }}
       />
 
       <main className={`${inter.className} relative min-h-screen text-white flex flex-col items-center px-6 overflow-hidden`}>
@@ -588,70 +564,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* sign-in section — for returning users */}
-        <section id="signin" className="relative px-6 py-24 border-t border-slate-100">
-          <div className="relative max-w-3xl mx-auto w-full grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="text-[11px] uppercase tracking-[0.28em] text-slate-500 mb-3 block">
-                already with us
-              </span>
-              <h2 className="text-3xl md:text-4xl text-slate-900 leading-tight tracking-tight mb-4">
-                welcome back to <Wordmark className="font-medium" />
-              </h2>
-              <p className="text-base text-slate-600 leading-relaxed">
-                sign in to pick up where you left off — your watch list, your scores, your space.
-              </p>
-            </div>
-
-            <form
-              onSubmit={handleSignIn}
-              className="rounded-2xl bg-white border border-slate-200 p-6 shadow-[0_20px_60px_-30px_rgba(30,41,59,0.3)]"
-            >
-              <label className="block text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-2">
-                email
-              </label>
-              <input
-                type="email"
-                required
-                value={signInEmail}
-                onChange={(e) => setSignInEmail(e.target.value)}
-                placeholder="you@company.com"
-                disabled={signInStatus === 'loading'}
-                className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 focus:bg-white transition-colors mb-4"
-              />
-              <label className="block text-[11px] uppercase tracking-[0.18em] text-slate-500 mb-2">
-                password
-              </label>
-              <input
-                type="password"
-                required
-                value={signInPassword}
-                onChange={(e) => setSignInPassword(e.target.value)}
-                placeholder="••••••••"
-                disabled={signInStatus === 'loading'}
-                className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 focus:bg-white transition-colors mb-5"
-              />
-              <button
-                type="submit"
-                disabled={signInStatus === 'loading' || !signInEmail || !signInPassword}
-                className="w-full px-4 py-3 rounded-full bg-slate-900 text-white font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {signInStatus === 'loading' ? 'signing in…' : 'sign in'}
-              </button>
-              {signInStatus === 'error' && (
-                <p className="mt-3 text-sm text-rose-700 bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg">
-                  {signInError}
-                </p>
-              )}
-              <p className="mt-4 text-[13px] text-slate-500 text-center">
-                new here?{' '}
-                <a href="#waitlist" className="text-slate-900 underline underline-offset-2 hover:text-slate-700">
-                  join the waitlist
-                </a>
-              </p>
-            </form>
-          </div>
-        </section>
         </div>
       </main>
     </>
