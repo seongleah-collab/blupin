@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/client';
 import Wordmark from '@/app/components/Wordmark';
-import Sidebar, { ConversationListItem } from './Sidebar';
+import { useRouter } from 'next/navigation';
+import Sidebar, { ConversationListItem, SidebarUser } from './Sidebar';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -91,6 +92,8 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState<ConversationListItem[]>([]);
   const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -110,6 +113,7 @@ export default function ChatPage() {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
+      setUserEmail(user.email ?? null);
       const meta = (user.user_metadata ?? {}) as { full_name?: string; name?: string };
       const metaName = (meta.full_name || meta.name || '').split(' ')[0]?.toLowerCase();
       setFirstName(metaName || nameFromEmail(user.email));
@@ -133,6 +137,13 @@ export default function ChatPage() {
     ta.style.height = 'auto';
     ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
   }, [input]);
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  }
 
   function startNewChat() {
     if (isStreaming) return;
@@ -302,10 +313,12 @@ export default function ChatPage() {
         conversations={conversations}
         activeId={activeConvoId}
         collapsed={sidebarCollapsed}
+        user={{ email: userEmail, displayName: firstName || null } satisfies SidebarUser}
         onToggle={() => setSidebarCollapsed((v) => !v)}
         onNewChat={startNewChat}
         onSelect={loadConversation}
         onDelete={deleteConversation}
+        onSignOut={handleSignOut}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
