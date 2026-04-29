@@ -1,16 +1,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/server';
 import Wordmark from '@/app/components/Wordmark';
 import SettingsNav from './_components/SettingsNav';
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  style: ['italic'],
-  weight: ['400', '500'],
-  display: 'swap',
-});
 
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -33,7 +25,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
 
       <main className="max-w-5xl mx-auto px-6 py-12">
         <h1 className="text-3xl md:text-4xl mb-2 leading-tight">
-          your <span className={`${fraunces.className} italic font-medium`}>settings</span>
+          your settings
         </h1>
         <p className="text-neutral-500 dark:text-neutral-400 mb-8 text-[14px]">
           update what blupin knows about you and who you&apos;re watching.
