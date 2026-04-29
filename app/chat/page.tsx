@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/client';
 import Wordmark from '@/app/components/Wordmark';
+import ThemeQuickToggle from '@/app/components/ThemeQuickToggle';
 import { useRouter } from 'next/navigation';
 import Sidebar, { ConversationListItem, SidebarUser } from './Sidebar';
 
@@ -332,11 +333,14 @@ export default function ChatPage() {
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        {sidebarCollapsed && (
-          <header className="px-6 py-4 flex items-center">
+        <header className="px-6 py-4 flex items-center justify-between">
+          {sidebarCollapsed ? (
             <Wordmark className="text-base font-medium tracking-tight text-neutral-900 dark:text-neutral-100" />
-          </header>
-        )}
+          ) : (
+            <span />
+          )}
+          <ThemeQuickToggle />
+        </header>
 
         {isEmpty ? (
           <main className="flex-1 flex flex-col items-center justify-center px-6 blu-pane">
