@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import Wordmark from '@/app/components/Wordmark';
 
@@ -144,6 +145,7 @@ export default function Sidebar({
   activeId,
   collapsed,
   user,
+  activeView = 'chat',
   onToggle,
   onNewChat,
   onSelect,
@@ -154,6 +156,7 @@ export default function Sidebar({
   activeId: string | null;
   collapsed: boolean;
   user: SidebarUser;
+  activeView?: 'chat' | 'feed';
   onToggle: () => void;
   onNewChat: () => void;
   onSelect: (id: string) => void;
@@ -179,13 +182,30 @@ export default function Sidebar({
           type="button"
           onClick={onNewChat}
           aria-label="new chat"
-          className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300"
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            activeView === 'chat'
+              ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+              : 'hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
+          }`}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 5v14" />
-            <path d="M5 12h14" />
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         </button>
+        <Link
+          href="/feed"
+          aria-label="feed"
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            activeView === 'feed'
+              ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+              : 'hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
+          }`}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+          </svg>
+        </Link>
         <div className="mt-auto">
           <ProfileMenu user={user} onSignOut={onSignOut} collapsed />
         </div>
@@ -216,11 +236,15 @@ export default function Sidebar({
         </button>
       </div>
 
-      <div className="px-3 pb-2">
+      <div className="px-3 pb-2 space-y-1">
         <button
           type="button"
           onClick={onNewChat}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+          className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+            activeView === 'chat'
+              ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+              : 'text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-800'
+          }`}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 5v14" />
@@ -228,6 +252,20 @@ export default function Sidebar({
           </svg>
           new chat
         </button>
+        <Link
+          href="/feed"
+          className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+            activeView === 'feed'
+              ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+              : 'text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-800'
+          }`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+          </svg>
+          feed
+        </Link>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 pb-3">

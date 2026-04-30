@@ -5,7 +5,7 @@ import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/client';
 import Wordmark from '@/app/components/Wordmark';
 import ThemeQuickToggle from '@/app/components/ThemeQuickToggle';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Sidebar, { ConversationListItem, SidebarUser } from './Sidebar';
 
 const fraunces = Fraunces({
@@ -96,6 +96,7 @@ export default function ChatPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -137,6 +138,33 @@ export default function ChatPage() {
       })
       .catch(() => {});
   }, [refreshConversations]);
+
+  useEffect(() => {
+    // deep-link from /feed: ?event=<id> pre-fills the textarea with a
+    // contextual question pulled from the event so the founder can
+    // edit and send. we strip the param afterward so refresh doesn't
+    // overwrite their in-progress draft.
+    const eventId = searchParams.get('event');
+    if (!eventId) return;
+    let cancelled = false;
+    fetch(`/api/events?id=${encodeURIComponent(eventId)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.event) return;
+        const e = data.event as { potential_competitor_name: string | null; title: string; source: string };
+        const who = e.potential_competitor_name || 'this competitor';
+        const cleanTitle = e.title.replace(/^r\/[A-Za-z0-9_]+\s*[:\-–—|·]?\s*/i, '').trim();
+        setInput(`what should i do about ${who}'s "${cleanTitle}" — saw it on ${e.source}.`);
+        textareaRef.current?.focus();
+        const url = new URL(window.location.href);
+        url.searchParams.delete('event');
+        window.history.replaceState({}, '', url.toString());
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -325,6 +353,7 @@ export default function ChatPage() {
         activeId={activeConvoId}
         collapsed={sidebarCollapsed}
         user={{ email: userEmail, displayName: firstName || null } satisfies SidebarUser}
+        activeView="chat"
         onToggle={() => setSidebarCollapsed((v) => !v)}
         onNewChat={startNewChat}
         onSelect={loadConversation}
