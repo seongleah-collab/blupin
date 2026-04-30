@@ -21,12 +21,23 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         router.replace('/login')
-      } else {
-        setChecking(false)
+        return
       }
+      // already-onboarded users shouldn't see the form again. send
+      // them to /chat where they actually use the product.
+      const { data: company } = await supabase
+        .from('user_companies')
+        .select('onboarded_at')
+        .eq('id', session.user.id)
+        .maybeSingle()
+      if (company?.onboarded_at) {
+        router.replace('/chat')
+        return
+      }
+      setChecking(false)
     })
   }, [router])
 
