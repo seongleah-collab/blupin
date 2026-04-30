@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { Suspense, useState, useRef, useEffect, useCallback } from 'react';
 import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/client';
 import Wordmark from '@/app/components/Wordmark';
@@ -84,6 +84,17 @@ function timeGreeting(): string {
 }
 
 export default function ChatPage() {
+  // useSearchParams() requires a Suspense boundary during static
+  // generation in Next 15+ — without it the build bails out. wrap
+  // the inner client tree so prerender succeeds.
+  return (
+    <Suspense fallback={<div className="h-screen w-screen bg-white dark:bg-neutral-950" />}>
+      <ChatPageInner />
+    </Suspense>
+  );
+}
+
+function ChatPageInner() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
