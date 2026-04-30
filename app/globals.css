@@ -19,8 +19,180 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  scroll-behavior: smooth;
+  /* offset so anchor links don't land under the 56px fixed top bar */
+  scroll-padding-top: 4rem;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes blupin-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* glass button — frosted baby-blue with a bright top highlight, soft
+   blue drop shadow, and a thin white rim. shared by every CTA on the
+   landing page so they all read as the same liquid-glass pill. */
+.glass-button {
+  background-image: linear-gradient(
+    180deg,
+    rgba(225, 239, 255, 0.95) 0%,
+    rgba(162, 207, 254, 1) 55%,
+    rgba(135, 188, 248, 1) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 12px 30px -10px rgba(31, 79, 165, 0.35),
+    inset 0 1.5px 0.5px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px rgba(31, 79, 165, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  color: #122a55;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.glass-button:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 18px 38px -10px rgba(31, 79, 165, 0.4),
+    inset 0 1.5px 0.5px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px rgba(31, 79, 165, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.glass-button:active {
+  transform: translateY(0);
+}
+
+.blupin-rise {
+  animation: blupin-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blupin-rise {
+    animation: none !important;
+  }
+}
+
+/* scroll-driven "tunnel zoom":
+   - hero text fades out as the user scrolls the first 100vh
+   - the concentric portal scales from 1x to 8x across 200vh, anchored
+     near its mint band so it feels like a camera diving in
+   - a white overlay fades in for the final 25% so the page emerges
+     into white before the rest of the content scrolls into view */
+@keyframes hero-text-exit {
+  0%   { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  34%  { opacity: 0; transform: translateY(-32px); pointer-events: auto; }
+  35%  { opacity: 0; transform: translateY(-32px); pointer-events: none; }
+  100% { opacity: 0; transform: translateY(-32px); pointer-events: none; }
+}
+
+@keyframes portal-zoom {
+  0%   { transform: translateZ(0) scale(1); }
+  100% { transform: translateZ(0) scale(3); }
+}
+
+/* bloom — scaling white circle. holds at zero through the first 35%
+   of the scroll while the rings stay intact, then expands fast and
+   the white-out completes exactly at 100% of the stage scroll. no
+   held-white pause — the moment the bloom is fully white, the sticky
+   stage releases and the next section is right there underneath. */
+@keyframes portal-bloom {
+  0%, 35% { transform: translate(-50%, -50%) scale(0); }
+  100%    { transform: translate(-50%, -50%) scale(4); }
+}
+
+.scroll-stage-text {
+  animation: hero-text-exit linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 100vh;
+  will-change: opacity, transform;
+}
+
+.scroll-stage-portal {
+  animation: portal-zoom linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 80vh;
+  transform-origin: 50% 78%;
+  will-change: transform;
+}
+
+.scroll-stage-bloom {
+  position: absolute;
+  left: 50%;
+  top: 78%;
+  width: 50vmax;
+  height: 50vmax;
+  transform: translate(-50%, -50%) scale(0);
+  /* mostly-solid white with a soft fade at the edge so the bloom
+     blends into the mint instead of cutting hard */
+  background: radial-gradient(circle, #ffffff 80%, rgba(255, 255, 255, 0) 100%);
+  animation: portal-bloom linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 80vh;
+  will-change: transform;
+}
+
+@supports not (animation-timeline: scroll()) {
+  .scroll-stage-text,
+  .scroll-stage-portal,
+  .scroll-stage-bloom {
+    animation: none;
+  }
+  .scroll-stage-bloom {
+    display: none;
+  }
+}
+
+/* section-enter — the how-it-works section's contents fade up as it
+   crosses into the viewport, so the moment after the hero's white-out
+   reads as a clean "next page coming up" transition rather than a
+   sudden cut. uses view() timeline so it's tied to the section's own
+   entrance, not to the document scroll. */
+@keyframes section-fade-up {
+  0%   { opacity: 0; transform: translateY(48px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.section-enter {
+  animation: section-fade-up linear both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 35%;
+  will-change: opacity, transform;
+}
+
+@supports not (animation-timeline: view()) {
+  .section-enter {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-enter {
+    animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-stage-text,
+  .scroll-stage-portal,
+  .scroll-stage-bloom {
+    animation: none !important;
+  }
+  .scroll-stage-bloom {
+    display: none;
+  }
 }
