@@ -158,8 +158,8 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-white/70">
           new here?{' '}
-          <Link href="/#waitlist" className="text-white underline underline-offset-2 hover:text-white/80">
-            join the waitlist
+          <Link href="/signup" className="text-white underline underline-offset-2 hover:text-white/80">
+            create an account
           </Link>
         </p>
       </div>

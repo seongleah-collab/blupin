@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
 import { Inter, Source_Serif_4 } from 'next/font/google';
 import ConcentricGradient from './components/ConcentricGradient';
 import Wordmark from './components/Wordmark';
@@ -56,37 +55,7 @@ const sourceSerif = Source_Serif_4({
 });
 
 export default function Home() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (status === 'loading') return;
-    setStatus('loading');
-    setErrorMsg('');
-    try {
-      const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setStatus('success');
-        router.push('/onboarding');
-      } else {
-        setStatus('error');
-        setErrorMsg(data.error || 'something went wrong');
-      }
-    } catch {
-      setStatus('error');
-      setErrorMsg('network error — try again');
-    }
-  }
 
   return (
     <div className={`${inter.className} min-h-dvh w-full bg-neutral-50 text-neutral-900 antialiased tracking-[-0.02em]`}>
@@ -110,12 +79,12 @@ export default function Home() {
             >
               sign in
             </Link>
-            <a
-              href="#waitlist"
+            <Link
+              href="/signup"
               className="glass-button h-9 inline-flex items-center justify-center rounded-full px-4 font-medium"
             >
               sign up
-            </a>
+            </Link>
           </div>
         </div>
       </header>
@@ -144,13 +113,13 @@ export default function Home() {
                 watches your competitors. finds what you&apos;d miss. tells you what to do.
               </p>
 
-              <a
-                href="#waitlist"
+              <Link
+                href="/signup"
                 className="glass-button blupin-rise inline-flex items-center gap-2 h-11 px-6 rounded-full text-[15px] font-medium"
                 style={{ animationDelay: '300ms' }}
               >
                 start now
-              </a>
+              </Link>
             </div>
 
             <div className="scroll-stage-portal w-full max-w-6xl mx-auto">
@@ -180,7 +149,7 @@ export default function Home() {
 
             <div className="grid md:grid-cols-3 gap-4">
               {/* card 1 — live feed */}
-              <div className="rounded-3xl bg-white border border-neutral-200/70 p-7 flex flex-col">
+              <div className="rounded-3xl glass-card p-7 flex flex-col">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]" />
@@ -222,7 +191,7 @@ export default function Home() {
               </div>
 
               {/* card 2 — threat radar */}
-              <div className="rounded-3xl bg-white border border-neutral-200/70 p-7 flex flex-col">
+              <div className="rounded-3xl glass-card p-7 flex flex-col">
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-xs uppercase tracking-[0.18em] text-neutral-400 font-medium">threat radar</span>
                   <span className="text-xs text-neutral-300 tabular-nums">02</span>
@@ -263,7 +232,7 @@ export default function Home() {
               </div>
 
               {/* card 3 — ask anything */}
-              <div className="rounded-3xl bg-white border border-neutral-200/70 p-7 flex flex-col">
+              <div className="rounded-3xl glass-card p-7 flex flex-col">
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-xs uppercase tracking-[0.18em] text-neutral-400 font-medium">ask anything</span>
                   <span className="text-xs text-neutral-300 tabular-nums">03</span>
@@ -313,7 +282,7 @@ export default function Home() {
                   { n: '02', t: 'answers, not dashboards.', d: "founders don't need another tab to check. ask a question, get a next move — that's the whole product." },
                   { n: '03', t: 'built for the speed of small teams.', d: 'no seats to configure, no integrations to wire up. set it up in a minute and move on with your week.' },
                 ].map((p) => (
-                  <div key={p.n} className="rounded-2xl bg-neutral-50 border border-neutral-200/70 p-6">
+                  <div key={p.n} className="rounded-2xl glass-card p-6">
                     <div className="flex items-baseline gap-4">
                       <span className="text-base font-medium text-neutral-300 w-8 shrink-0 tabular-nums">{p.n}</span>
                       <div>
@@ -341,12 +310,12 @@ export default function Home() {
                 <div className="mt-2 text-xs uppercase tracking-[0.2em] text-neutral-400">to first answer</div>
               </div>
               <div className="md:text-right">
-                <a
-                  href="#waitlist"
+                <Link
+                  href="/signup"
                   className="glass-button inline-flex items-center gap-2 h-10 px-5 rounded-full text-sm font-medium"
                 >
                   start now <span aria-hidden>→</span>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -365,7 +334,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="rounded-3xl bg-white border border-neutral-200/70 overflow-hidden divide-y divide-neutral-200/70">
+            <div className="rounded-3xl glass-card overflow-hidden divide-y divide-neutral-900/5">
               {faqs.map((faq, i) => {
                 const isOpen = openFaq === i;
                 return (
@@ -398,90 +367,6 @@ export default function Home() {
                 );
               })}
             </div>
-          </div>
-        </section>
-
-        {/* waitlist */}
-        <section id="waitlist" className="px-5 py-24 sm:py-32 bg-white">
-          <div className="max-w-3xl mx-auto flex flex-col items-center text-center gap-6">
-            <span className="text-sm text-neutral-400">get started</span>
-
-            <h2 className="text-[clamp(2.25rem,5.5vw,4.5rem)] leading-[1.02] font-medium tracking-[-0.04em] text-neutral-900">
-              create your account.
-              <br />
-              start shipping smarter.
-            </h2>
-
-            <p className="text-base sm:text-lg text-neutral-500 max-w-xl leading-relaxed">
-              blupin is live. create an account, tell us what you&apos;re building, and start watching the field in under a minute.
-            </p>
-
-            {status === 'success' ? (
-              <div className="glass-button inline-flex items-center gap-2 h-11 px-6 rounded-full text-sm font-medium">
-                <span className="text-emerald-700">✓</span>
-                taking you in…
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col gap-2 mt-2">
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your email"
-                  disabled={status === 'loading'}
-                  className="h-11 px-5 rounded-full bg-neutral-50 border border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100 transition"
-                />
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="password (6+ characters)"
-                    disabled={status === 'loading'}
-                    className="flex-1 h-11 px-5 rounded-full bg-neutral-50 border border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100 transition"
-                  />
-                  <button
-                    type="submit"
-                    disabled={status === 'loading' || !email || !password}
-                    className="glass-button h-11 px-6 rounded-full font-medium disabled:opacity-50"
-                  >
-                    {status === 'loading' ? 'creating…' : 'get started'}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {status === 'error' && (
-              <p className="text-sm text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">{errorMsg}</p>
-            )}
-
-            <div className="flex items-center gap-6 text-xs uppercase tracking-[0.2em] text-neutral-400 pt-1">
-              <span className="flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-neutral-300" />
-                no spam
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-neutral-300" />
-                unsubscribe anytime
-              </span>
-            </div>
-          </div>
-
-          <div className="max-w-5xl mx-auto mt-20 grid md:grid-cols-3 gap-4">
-            {[
-              { n: '01', t: 'founding pricing.', d: 'early customers lock in our lowest tier for the first full year — no matter where pricing lands later.' },
-              { n: '02', t: 'shape the roadmap.', d: "we're building this with our first users. the sources we watch next and the integrations we ship first are decided by you." },
-              { n: '03', t: 'set up in seconds.', d: 'paste a one-line description, confirm your competitors, and start watching today. no demo call, no sales pitch.' },
-            ].map((b) => (
-              <div key={b.n} className="rounded-3xl bg-neutral-50 border border-neutral-200/70 p-7">
-                <span className="text-xs uppercase tracking-[0.18em] text-neutral-400 font-medium">{b.n}</span>
-                <h3 className="text-xl font-medium text-neutral-900 leading-[1.15] mt-3 mb-2 tracking-[-0.02em]">{b.t}</h3>
-                <p className="text-sm text-neutral-500 leading-relaxed">{b.d}</p>
-              </div>
-            ))}
           </div>
         </section>
 

@@ -124,6 +124,37 @@ body {
   transform: translateY(0);
 }
 
+/* glass card — futuristic glass pill treatment matching the Dribbble
+   reference. clear-white interior, a brighter top edge gloss, a
+   visible perimeter ring (inset + outer halo) so the rim reads as a
+   defined piece of glass, and a soft outer drop shadow lifting the
+   card off the page. used by every content panel on the landing
+   (how-it-works, about, faq, waitlist benefits). */
+.glass-card {
+  background-color: #f7f8fb;
+  background-image:
+    /* a tight bright sheen across the top so the upper edge catches
+       light, fading off before the middle */
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(255, 255, 255, 0.95), transparent 55%),
+    linear-gradient(180deg, #ffffff 0%, #f3f5f8 60%, #f8fafc 100%);
+  border: 0;
+  /* layered shadows do everything:
+     - outer halo: faint cool ring around the whole rim (the "border")
+     - lifted drop shadow: card floats above the surface
+     - tight close shadow: anchors the bottom edge
+     - bright inset top: glossy edge catching light
+     - dark inset bottom: inside-the-pill recess so it looks domed
+     - inset hairline: defines the perimeter without a hard line */
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.05),
+    0 0 0 1.5px rgba(255, 255, 255, 0.6),
+    0 28px 56px -18px rgba(15, 23, 42, 0.20),
+    0 8px 18px -4px rgba(15, 23, 42, 0.10),
+    inset 0 2px 1.5px rgba(255, 255, 255, 1),
+    inset 0 -4px 8px -3px rgba(15, 23, 42, 0.12),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
 /* frosted glass card — glassmorphism for the panels under the hero
    (how-it-works cards, about panels, faq container, waitlist benefit
    cards). semi-transparent body + heavy backdrop blur picks up the
