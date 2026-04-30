@@ -103,8 +103,11 @@ export default function Home() {
             <a href="#faq" className="font-medium text-neutral-700 hover:text-neutral-900 transition">faq</a>
           </nav>
 
-          <div className="flex items-center gap-4 text-sm justify-self-end">
-            <Link href="/login" className="font-medium text-neutral-700 hover:text-neutral-900 transition">
+          <div className="flex items-center gap-2 text-sm justify-self-end">
+            <Link
+              href="/login"
+              className="glass-button-clear h-9 inline-flex items-center justify-center rounded-full px-4 font-medium"
+            >
               sign in
             </Link>
             <a
@@ -124,7 +127,7 @@ export default function Home() {
             across. text fades out, the gradient zooms toward its mint
             core, and a white bloom takes over right as the sticky
             releases into the next section. */}
-        <section className="relative w-full bg-neutral-50 h-[180vh]">
+        <section className="relative w-full bg-neutral-50 h-[150vh]">
           <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center pt-20 md:pt-24 px-5">
             <div className="scroll-stage-text w-full max-w-6xl mx-auto flex flex-col items-center text-center gap-6 mb-10 md:mb-14">
               <h1

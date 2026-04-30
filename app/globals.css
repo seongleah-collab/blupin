@@ -77,6 +77,53 @@ body {
   transform: translateY(0);
 }
 
+/* clear variant — same shape and highlight as .glass-button but with a
+   transparent frosted body so it reads as a "secondary" pill next to
+   the blue primary. used for sign-in next to sign-up in the nav. */
+.glass-button-clear {
+  /* match the surface color so the pill reads as a soft 3D bump on the
+     page rather than a fenced-off shape. dimension comes from shadows,
+     not from a hard border line. */
+  background-color: #f6f7f9;
+  background-image: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f4f5f7 55%,
+    #fafbfd 100%
+  );
+  border: 0;
+  /* layered shadows do all the work:
+     - soft outer drop shadow + tighter close shadow → the pill is
+       lifted off the surface
+     - bright inset top highlight → glossy edge catching light
+     - dark inset bottom shadow → the dome curves down on the bottom
+     - faint inset hairline → defines the perimeter without a hard line */
+  box-shadow:
+    0 12px 26px -10px rgba(15, 23, 42, 0.18),
+    0 3px 8px -2px rgba(15, 23, 42, 0.10),
+    inset 0 2px 1.5px rgba(255, 255, 255, 1),
+    inset 0 -3px 5px -2px rgba(15, 23, 42, 0.14),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+  color: #1f2937;
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.glass-button-clear:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 32px -10px rgba(15, 23, 42, 0.22),
+    0 4px 10px -2px rgba(15, 23, 42, 0.12),
+    inset 0 2px 1.5px rgba(255, 255, 255, 1),
+    inset 0 -3px 5px -2px rgba(15, 23, 42, 0.16),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.07);
+}
+
+.glass-button-clear:active {
+  transform: translateY(0);
+}
+
 .blupin-rise {
   animation: blupin-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -111,21 +158,21 @@ body {
    held-white pause — the moment the bloom is fully white, the sticky
    stage releases and the next section is right there underneath. */
 @keyframes portal-bloom {
-  0%, 35% { transform: translate(-50%, -50%) scale(0); }
+  0%, 25% { transform: translate(-50%, -50%) scale(0); }
   100%    { transform: translate(-50%, -50%) scale(4); }
 }
 
 .scroll-stage-text {
   animation: hero-text-exit linear both;
   animation-timeline: scroll(root block);
-  animation-range: 0 100vh;
+  animation-range: 0 55vh;
   will-change: opacity, transform;
 }
 
 .scroll-stage-portal {
   animation: portal-zoom linear both;
   animation-timeline: scroll(root block);
-  animation-range: 0 80vh;
+  animation-range: 0 50vh;
   transform-origin: 50% 78%;
   will-change: transform;
 }
@@ -142,7 +189,7 @@ body {
   background: radial-gradient(circle, #ffffff 80%, rgba(255, 255, 255, 0) 100%);
   animation: portal-bloom linear both;
   animation-timeline: scroll(root block);
-  animation-range: 0 80vh;
+  animation-range: 0 50vh;
   will-change: transform;
 }
 
