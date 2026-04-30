@@ -124,6 +124,39 @@ body {
   transform: translateY(0);
 }
 
+/* glass keycap — 3D glassy floating tile à la cluely's cmd/return
+   keys. soft white pillow body, bright outer halo (the "glow"),
+   layered inset highlights/shadows, and a luminous icon in the
+   middle. used as decoration on the closing CTA. */
+.glass-keycap {
+  position: relative;
+  border-radius: 36px;
+  background-image:
+    radial-gradient(ellipse 100% 60% at 50% 0%, rgba(255, 255, 255, 0.95), transparent 60%),
+    linear-gradient(135deg, #ffffff 0%, #eef1fb 60%, #dde3f6 100%);
+  box-shadow:
+    /* outer glow halo — the diffuse light around the tile */
+    0 0 110px 22px rgba(170, 190, 240, 0.6),
+    0 0 50px 8px rgba(190, 205, 245, 0.65),
+    /* lifted drop shadows — deeper for a more grounded feel */
+    0 50px 90px -25px rgba(40, 70, 170, 0.4),
+    0 24px 44px -14px rgba(40, 70, 170, 0.28),
+    0 10px 20px -8px rgba(40, 70, 170, 0.22),
+    /* inner highlights + inset rim for the pillow look */
+    inset 0 3px 2.5px rgba(255, 255, 255, 1),
+    inset 0 -5px 10px -3px rgba(70, 90, 160, 0.2),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.7);
+}
+
+/* the icon glyph inside a keycap — white strokes with a soft
+   sky-blue halo so it reads as backlit / luminous. */
+.glass-keycap-icon {
+  filter:
+    drop-shadow(0 0 6px rgba(255, 255, 255, 1))
+    drop-shadow(0 0 16px rgba(170, 195, 245, 0.85))
+    drop-shadow(0 0 28px rgba(170, 195, 245, 0.55));
+}
+
 /* glass card — futuristic glass pill treatment matching the Dribbble
    reference. clear-white interior, a brighter top edge gloss, a
    visible perimeter ring (inset + outer halo) so the rim reads as a

@@ -370,10 +370,116 @@ export default function Home() {
           </div>
         </section>
 
-        <footer className="px-5 py-12 border-t border-neutral-200/70">
-          <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-neutral-400">
-            <Wordmark className="text-neutral-500" dotClassName="text-sky-400" />
-            <span>© {new Date().getFullYear()} blupin</span>
+        {/* closing CTA — sits right before the footer. background fades
+            from white (matching the faq section above) into a very
+            light slate so the page settles instead of cutting hard. */}
+        <section className="relative px-5 py-32 sm:py-40 overflow-hidden bg-gradient-to-b from-white via-neutral-50 to-slate-100">
+          <div className="relative max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+            {/* left column — headline + CTA */}
+            <div className="flex flex-col items-start gap-6">
+              <h2 className={`${sourceSerif.className} text-[clamp(1.25rem,2.2vw,1.75rem)] leading-[1.2] font-medium tracking-[-0.01em] text-neutral-900 max-w-2xl`}>
+                competitive intelligence, at your speed.
+              </h2>
+              <p className="text-base sm:text-lg text-neutral-500 max-w-xl leading-relaxed">
+                start watching the field today. set up takes under a minute — no demo call, no sales pitch.
+              </p>
+              <Link
+                href="/signup"
+                className="glass-button inline-flex items-center gap-2 h-11 px-6 rounded-full text-[15px] font-medium mt-2"
+              >
+                start now
+              </Link>
+            </div>
+
+            {/* right column — both keycaps staggered on the right,
+                cluely-style: lightbulb upper-right, magnifying glass
+                lower and pulled inward. */}
+            <div aria-hidden className="hidden md:block relative h-[300px]">
+              <div className="absolute -right-96 -top-8 w-[130px] h-[130px] -rotate-6 glass-keycap flex items-center justify-center">
+                <svg
+                  className="glass-keycap-icon"
+                  width="60"
+                  height="60"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M9 18h6" />
+                  <path d="M10 22h4" />
+                  <path d="M12 2a6 6 0 0 0-3.5 10.85c.7.7 1.18 1.4 1.4 2.15h4.2c.22-.75.7-1.45 1.4-2.15A6 6 0 0 0 12 2z" />
+                </svg>
+              </div>
+              <div className="absolute left-20 top-20 w-[140px] h-[140px] rotate-6 glass-keycap flex items-center justify-center">
+                <svg
+                  className="glass-keycap-icon"
+                  width="65"
+                  height="65"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <circle cx="11" cy="11" r="7.5" />
+                  <path d="m20.5 20.5-4.6-4.6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer className="px-5 pt-16 pb-8 border-t border-neutral-200/70 bg-slate-100">
+          <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-12 gap-10">
+            {/* left — wordmark + tagline */}
+            <div className="col-span-2 md:col-span-5 flex flex-col gap-3">
+              <Wordmark className="text-2xl font-medium text-neutral-700" dotClassName="text-sky-400" />
+              <p className="text-sm text-neutral-500 max-w-sm leading-relaxed">
+                competitive intelligence for founders who can&apos;t afford to miss.
+              </p>
+            </div>
+
+            {/* resources */}
+            <div className="md:col-span-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-neutral-400 font-medium mb-4">resources</p>
+              <ul className="space-y-2.5 text-sm">
+                <li><a href="#how-it-works" className="text-neutral-600 hover:text-neutral-900 transition">how it works</a></li>
+                <li><a href="#about" className="text-neutral-600 hover:text-neutral-900 transition">about</a></li>
+                <li><a href="#faq" className="text-neutral-600 hover:text-neutral-900 transition">faq</a></li>
+              </ul>
+            </div>
+
+            {/* support */}
+            <div className="md:col-span-2">
+              <p className="text-xs uppercase tracking-[0.18em] text-neutral-400 font-medium mb-4">support</p>
+              <ul className="space-y-2.5 text-sm">
+                <li><a href="#" className="text-neutral-600 hover:text-neutral-900 transition">help center</a></li>
+                <li><a href="#" className="text-neutral-600 hover:text-neutral-900 transition">contact</a></li>
+              </ul>
+            </div>
+
+            {/* legal */}
+            <div className="md:col-span-2">
+              <p className="text-xs uppercase tracking-[0.18em] text-neutral-400 font-medium mb-4">legal</p>
+              <ul className="space-y-2.5 text-sm">
+                <li><Link href="/privacy" className="text-neutral-600 hover:text-neutral-900 transition">privacy policy</Link></li>
+                <li><Link href="/terms" className="text-neutral-600 hover:text-neutral-900 transition">terms of service</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* divider + bottom row: status badge ←→ copyright */}
+          <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-neutral-200/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-neutral-200/70 bg-white/60 px-3 py-1 text-xs text-neutral-500">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
+              all systems live
+            </span>
+            <span className="text-xs text-neutral-400">© {new Date().getFullYear()} blupin. all rights reserved.</span>
           </div>
         </footer>
       </main>
