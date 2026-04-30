@@ -162,7 +162,7 @@ export default function Sidebar({
 }) {
   if (collapsed) {
     return (
-      <aside className="h-screen w-12 border-r border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center py-4 gap-3 shrink-0">
+      <aside className="m-3 h-[calc(100vh-1.5rem)] w-14 rounded-3xl glass-pill-sidebar flex flex-col items-center py-4 gap-3 shrink-0 overflow-hidden">
         <button
           type="button"
           onClick={onToggle}
@@ -201,7 +201,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="h-screen w-64 border-r border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex flex-col shrink-0">
+    <aside className="m-3 h-[calc(100vh-1.5rem)] w-64 rounded-3xl glass-pill-sidebar flex flex-col shrink-0 overflow-hidden">
       <div className="px-3 py-3 flex items-center justify-between">
         <Wordmark className="text-base font-medium tracking-tight text-neutral-900 dark:text-neutral-100 px-2" />
         <button

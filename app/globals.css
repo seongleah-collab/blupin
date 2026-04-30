@@ -188,6 +188,65 @@ body {
     inset 0 0 0 1px rgba(15, 23, 42, 0.08);
 }
 
+/* glass pill sidebar — same shadow language as .glass-card but with
+   a subtler interior so it reads as a tall floating column rather
+   than a content panel. used by /chat's left rail. dark-mode variant
+   swaps to a tinted slate body so it stays visible on the near-black
+   chat background. */
+.glass-pill-sidebar {
+  position: relative;
+  background-color: #f4f5f9;
+  /* layered light: a bright top-left "shine" corner, a subtle warm
+     bottom-right shadow, a diagonal sheen line cutting across the
+     middle, and a base vertical gradient. order matters — the
+     sheen and corner highlights sit ON TOP of the base. */
+  background-image:
+    /* diagonal sheen — narrow band of brighter light running
+       top-right → bottom-left, mimicking light catching curved glass */
+    linear-gradient(135deg, transparent 35%, rgba(255, 255, 255, 0.55) 48%, rgba(255, 255, 255, 0.15) 56%, transparent 70%),
+    /* bottom-right cool shadow — gives the pill a dim corner so it
+       reads as 3D, not flat */
+    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(180, 195, 220, 0.35), transparent 55%),
+    /* top-left bright highlight — strongest light source, makes the
+       upper-left corner glow */
+    radial-gradient(ellipse 70% 55% at 0% 0%, rgba(255, 255, 255, 1), transparent 60%),
+    /* base vertical body — warmer near the top, cooler near the
+       bottom, so the column has subtle temperature variation */
+    linear-gradient(180deg, #fdfdff 0%, #f1f3f8 55%, #e7eaf2 100%);
+  box-shadow:
+    /* outer halo + perimeter ring */
+    0 0 0 1px rgba(15, 23, 42, 0.06),
+    0 0 0 1.5px rgba(255, 255, 255, 0.65),
+    /* lifted drop shadow */
+    0 32px 64px -20px rgba(30, 45, 90, 0.22),
+    0 10px 22px -6px rgba(30, 45, 90, 0.12),
+    /* bright inset highlight along the top edge — the edge that
+       catches the most light */
+    inset 0 2.5px 2px rgba(255, 255, 255, 1),
+    inset 1px 0 1.5px rgba(255, 255, 255, 0.9),
+    /* recessed inset on the bottom-right — completes the curvature
+       illusion with a dim opposing edge */
+    inset 0 -6px 12px -4px rgba(70, 90, 140, 0.18),
+    inset -2px 0 8px -4px rgba(70, 90, 140, 0.14),
+    /* hairline rim so the perimeter reads as defined glass */
+    inset 0 0 0 1px rgba(15, 23, 42, 0.07);
+}
+
+.dark .glass-pill-sidebar {
+  background-color: #15171c;
+  background-image:
+    radial-gradient(ellipse 140% 40% at 50% -10%, rgba(255, 255, 255, 0.06), transparent 55%),
+    linear-gradient(180deg, #1a1d24 0%, #15171c 60%, #111318 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 0 1.5px rgba(255, 255, 255, 0.03),
+    0 28px 56px -18px rgba(0, 0, 0, 0.5),
+    0 8px 18px -4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.06),
+    inset 0 -4px 8px -3px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
 /* frosted glass card — glassmorphism for the panels under the hero
    (how-it-works cards, about panels, faq container, waitlist benefit
    cards). semi-transparent body + heavy backdrop blur picks up the
