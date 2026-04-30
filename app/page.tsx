@@ -127,7 +127,7 @@ export default function Home() {
             across. text fades out, the gradient zooms toward its mint
             core, and a white bloom takes over right as the sticky
             releases into the next section. */}
-        <section className="relative w-full bg-neutral-50 h-[150vh]">
+        <section className="relative w-full bg-neutral-50 h-[225vh]">
           <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center pt-20 md:pt-24 px-5">
             <div className="scroll-stage-text w-full max-w-6xl mx-auto flex flex-col items-center text-center gap-6 mb-10 md:mb-14">
               <h1
@@ -353,7 +353,7 @@ export default function Home() {
         </section>
 
         {/* faq */}
-        <section id="faq" className="px-5 py-24 sm:py-32">
+        <section id="faq" className="px-5 py-24 sm:py-32 bg-white">
           <div className="max-w-3xl mx-auto">
             <div className="flex flex-col items-center text-center gap-3 mb-12">
               <span className="text-sm text-neutral-400">faq</span>

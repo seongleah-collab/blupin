@@ -124,6 +124,52 @@ body {
   transform: translateY(0);
 }
 
+/* frosted glass card — glassmorphism for the panels under the hero
+   (how-it-works cards, about panels, faq container, waitlist benefit
+   cards). semi-transparent body + heavy backdrop blur picks up the
+   tinted ambient bg behind it. inner highlight + subtle hairline keep
+   the edge crisp without a hard border line. */
+.frosted-card {
+  /* heavily translucent body — the color underneath should clearly
+     bleed through. matt-glass look comes from a low-opacity fill +
+     thick blur + layered inner shadows rather than a solid bg. */
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.14) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  /* layered inner shadows do the etched/matt effect:
+     - bright top highlight (light catching the upper edge)
+     - softer bottom shadow (recessed lower edge)
+     - hairline inner rim (defines the perimeter without solid line)
+     - outer drop shadow (lifts off the page) */
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -1.5px 1.5px rgba(15, 23, 42, 0.06),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 10px 28px -10px rgba(15, 23, 42, 0.10),
+    0 2px 6px -2px rgba(15, 23, 42, 0.04);
+}
+
+/* ambient tinted backdrop — punchier pastel radial blobs sit behind
+   the frosted cards. with the cards being mostly transparent, the
+   color needs to be richer here so it actually shows through. */
+.ambient-bg {
+  background-color: #f4f7fb;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(125, 211, 252, 0.75), transparent 45%),
+    radial-gradient(circle at 88% 92%, rgba(165, 180, 252, 0.6), transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(110, 231, 183, 0.35), transparent 55%);
+  /* lock the gradient blobs to the viewport so every section that uses
+     this class renders the same pattern at the same screen position.
+     scrolling past a section boundary no longer resets the blobs —
+     the backdrop reads as one continuous, looped surface. */
+  background-attachment: fixed;
+}
+
 .blupin-rise {
   animation: blupin-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -165,14 +211,14 @@ body {
 .scroll-stage-text {
   animation: hero-text-exit linear both;
   animation-timeline: scroll(root block);
-  animation-range: 0 55vh;
+  animation-range: 0 130vh;
   will-change: opacity, transform;
 }
 
 .scroll-stage-portal {
   animation: portal-zoom linear both;
   animation-timeline: scroll(root block);
-  animation-range: 0 50vh;
+  animation-range: 0 125vh;
   transform-origin: 50% 78%;
   will-change: transform;
 }
@@ -189,7 +235,7 @@ body {
   background: radial-gradient(circle, #ffffff 80%, rgba(255, 255, 255, 0) 100%);
   animation: portal-bloom linear both;
   animation-timeline: scroll(root block);
-  animation-range: 0 50vh;
+  animation-range: 0 125vh;
   will-change: transform;
 }
 
