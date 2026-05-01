@@ -7,6 +7,7 @@ import Wordmark from '@/app/components/Wordmark';
 import ThemeQuickToggle from '@/app/components/ThemeQuickToggle';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Sidebar, { ConversationListItem, SidebarUser } from './Sidebar';
+import { severityHue } from '@/lib/severity';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -22,11 +23,6 @@ function nameFromEmail(email: string | undefined | null): string {
   const local = email.split('@')[0] || '';
   const first = local.split(/[._-]/)[0] || local;
   return first.toLowerCase();
-}
-
-function severityHue(n: number): number {
-  const clamped = Math.max(1, Math.min(10, n));
-  return 50 - ((clamped - 1) * 50) / 9;
 }
 
 function renderAssistantContent(content: string): React.ReactNode[] {

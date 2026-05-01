@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@/lib/supabase/server';
+import { severityFromLevel } from '@/lib/severity';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -38,6 +39,7 @@ function buildSystemPrompt(
         .map(
           (e, i) =>
             `[${i + 1}] ${e.potential_competitor_name ?? 'Unknown'} — ${e.title}
+  Severity: ${severityFromLevel(e.threat_level, e.relevance_score)}/10 (use this exact number in [severity:N] when discussing this event)
   Source: ${e.source} | Threat: ${e.threat_level ?? 'low'} | Relevance: ${e.relevance_score?.toFixed(2) ?? '?'} | Match: ${e.niche_match ? 'yes' : 'no'}
   Summary: ${e.summary ?? '(no summary)'}
   Suggested action: ${e.recommended_action ?? '(none)'}
@@ -73,7 +75,9 @@ The named competitor list above is what the founder explicitly cares about — b
 ## Severity scoring (required)
 Every time you discuss a competitor, news item, or threat, prefix that block with a severity marker in the literal format \`[severity:N]\` where N is an integer 1-10. The marker MUST be the very first thing in that block (before the name, before any prose). The UI parses these markers and replaces them with a colored severity dot, so the format must be exact: \`[severity:N]\` — square brackets, lowercase word, colon, integer, no spaces inside.
 
-Calibration:
+**If the threat you're discussing is one of the events listed above, you MUST use the exact \`Severity: N/10\` number from that event's row — do not re-score it.** The feed and competitor pages display that same number, and it has to match across surfaces. Only pick a fresh number when you're discussing a player that isn't in the events block (e.g. a relevant incumbent or indie builder you're surfacing from your own knowledge).
+
+Calibration (only for items not in the events block):
 - 1-3: distant or adjacent player, low chance of competing in their wedge soon
 - 4-6: relevant player but no immediate move worth losing sleep over
 - 7-8: real threat — competing on the same wedge soon, could narrow the moat

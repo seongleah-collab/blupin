@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import Sidebar, { ConversationListItem, SidebarUser } from '@/app/chat/Sidebar';
 import Sparkline, { SparklinePoint } from '@/app/components/Sparkline';
 import CompetitorLogo from '@/app/components/CompetitorLogo';
+import { severityFromLevel, severityHue } from '@/lib/severity';
 
 type Profile = {
   name: string;
@@ -76,17 +77,6 @@ function relativeTime(iso: string | null): string {
   const d = Math.floor(hr / 24);
   if (d < 7) return `${d}d ago`;
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
-function severityFromLevel(level: string | null, score: number | null): number {
-  const base = level === 'high' ? 8 : level === 'medium' ? 5 : level === 'low' ? 3 : 4;
-  const bump = score == null ? 0 : Math.round((score - 0.5) * 4);
-  return Math.min(10, Math.max(1, base + bump));
-}
-
-function severityHue(n: number): number {
-  const clamped = Math.max(1, Math.min(10, n));
-  return 50 - ((clamped - 1) * 50) / 9;
 }
 
 export default function CompetitorPage({

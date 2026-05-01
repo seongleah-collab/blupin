@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import Sidebar, { ConversationListItem, SidebarUser } from '../chat/Sidebar';
 import Sparkline, { SparklinePoint } from '../components/Sparkline';
 import CompetitorLogo from '../components/CompetitorLogo';
+import { severityFromLevel, severityHue, severityLabel } from '@/lib/severity';
 
 type FeedEvent = {
   id: string;
@@ -181,28 +182,6 @@ function dateTime(iso: string | null): string {
     year: sameYear ? undefined : 'numeric',
   });
   return `${date}, ${time}`;
-}
-
-function severityFromLevel(level: string | null, score: number | null): number {
-  // map threat_level + relevance_score to a 1-10 dot intensity
-  const base =
-    level === 'high' ? 8 : level === 'medium' ? 5 : level === 'low' ? 3 : 4;
-  const bump = score == null ? 0 : Math.round((score - 0.5) * 4);
-  return Math.min(10, Math.max(1, base + bump));
-}
-
-// matches the hue scale chat uses for [severity:N] markers — green
-// at low end → red at high end, so the feed and chat speak the same
-// visual language.
-function severityHue(n: number): number {
-  const clamped = Math.max(1, Math.min(10, n));
-  return 50 - ((clamped - 1) * 50) / 9;
-}
-
-function severityLabel(n: number): 'high' | 'medium' | 'low' {
-  if (n >= 7) return 'high';
-  if (n >= 4) return 'medium';
-  return 'low';
 }
 
 export default function FeedPage() {
