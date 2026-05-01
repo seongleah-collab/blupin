@@ -339,7 +339,17 @@ function ChatPageInner() {
   );
 
   return (
-    <div className="flex h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
+    <div className="relative flex h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 overflow-hidden">
+      {/* ambient orbs — soft color washes behind the sidebar so the
+          glass has something to refract through. positioned roughly
+          where the sidebar floats (top-left column). */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full blur-3xl opacity-60 dark:opacity-50 bg-[radial-gradient(circle_at_center,rgba(186,209,255,0.65),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(80,110,200,0.35),transparent_65%)]" />
+        <div className="absolute top-1/3 -left-32 w-[360px] h-[360px] rounded-full blur-3xl opacity-50 dark:opacity-40 bg-[radial-gradient(circle_at_center,rgba(220,200,255,0.55),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(120,90,180,0.32),transparent_65%)]" />
+        <div className="absolute bottom-0 -left-20 w-[340px] h-[340px] rounded-full blur-3xl opacity-50 dark:opacity-40 bg-[radial-gradient(circle_at_center,rgba(180,230,220,0.5),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(60,130,150,0.28),transparent_65%)]" />
+      </div>
+
+      <div className="relative z-10 flex flex-1 min-w-0">
       <style>{`
         @keyframes blu-fade-up {
           from { opacity: 0; transform: translateY(8px); }
@@ -460,6 +470,7 @@ function ChatPageInner() {
             </div>
           </>
         )}
+      </div>
       </div>
     </div>
   );

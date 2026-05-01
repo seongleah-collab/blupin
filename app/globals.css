@@ -195,56 +195,66 @@ body {
    chat background. */
 .glass-pill-sidebar {
   position: relative;
-  background-color: #f4f5f9;
-  /* layered light: a bright top-left "shine" corner, a subtle warm
-     bottom-right shadow, a diagonal sheen line cutting across the
-     middle, and a base vertical gradient. order matters — the
-     sheen and corner highlights sit ON TOP of the base. */
+  /* heavily translucent body so ambient color behind it bleeds
+     through the backdrop blur. the layered gradients on top sell
+     the curved-glass illusion (highlight, sheen, shadowed corner). */
+  background-color: rgba(248, 250, 255, 0.45);
   background-image:
     /* diagonal sheen — narrow band of brighter light running
        top-right → bottom-left, mimicking light catching curved glass */
-    linear-gradient(135deg, transparent 35%, rgba(255, 255, 255, 0.55) 48%, rgba(255, 255, 255, 0.15) 56%, transparent 70%),
+    linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.45) 47%, rgba(255, 255, 255, 0.12) 56%, transparent 72%),
     /* bottom-right cool shadow — gives the pill a dim corner so it
        reads as 3D, not flat */
-    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(180, 195, 220, 0.35), transparent 55%),
-    /* top-left bright highlight — strongest light source, makes the
-       upper-left corner glow */
-    radial-gradient(ellipse 70% 55% at 0% 0%, rgba(255, 255, 255, 1), transparent 60%),
-    /* base vertical body — warmer near the top, cooler near the
-       bottom, so the column has subtle temperature variation */
-    linear-gradient(180deg, #fdfdff 0%, #f1f3f8 55%, #e7eaf2 100%);
+    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(150, 175, 215, 0.22), transparent 60%),
+    /* top-left bright highlight */
+    radial-gradient(ellipse 70% 55% at 0% 0%, rgba(255, 255, 255, 0.7), transparent 65%),
+    /* base vertical body — very faint, lets backdrop carry color */
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(240, 244, 252, 0.25) 55%, rgba(225, 232, 245, 0.3) 100%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   box-shadow:
-    /* outer halo + perimeter ring */
-    0 0 0 1px rgba(15, 23, 42, 0.06),
-    0 0 0 1.5px rgba(255, 255, 255, 0.65),
+    /* bright outer rim — the defining edge of the glass */
+    0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 0 0 1.5px rgba(15, 23, 42, 0.05),
     /* lifted drop shadow */
-    0 32px 64px -20px rgba(30, 45, 90, 0.22),
-    0 10px 22px -6px rgba(30, 45, 90, 0.12),
-    /* bright inset highlight along the top edge — the edge that
-       catches the most light */
-    inset 0 2.5px 2px rgba(255, 255, 255, 1),
-    inset 1px 0 1.5px rgba(255, 255, 255, 0.9),
-    /* recessed inset on the bottom-right — completes the curvature
-       illusion with a dim opposing edge */
-    inset 0 -6px 12px -4px rgba(70, 90, 140, 0.18),
-    inset -2px 0 8px -4px rgba(70, 90, 140, 0.14),
-    /* hairline rim so the perimeter reads as defined glass */
-    inset 0 0 0 1px rgba(15, 23, 42, 0.07);
+    0 32px 64px -20px rgba(30, 45, 90, 0.2),
+    0 10px 22px -6px rgba(30, 45, 90, 0.1),
+    /* bright inset highlight along the top edge */
+    inset 0 2px 1px rgba(255, 255, 255, 0.95),
+    inset 1px 0 1.5px rgba(255, 255, 255, 0.8),
+    /* recessed inset on the bottom-right */
+    inset 0 -5px 10px -4px rgba(70, 90, 140, 0.15),
+    inset -2px 0 8px -4px rgba(70, 90, 140, 0.1),
+    /* hairline rim */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
 
 .dark .glass-pill-sidebar {
-  background-color: #15171c;
+  background-color: rgba(20, 22, 28, 0.4);
   background-image:
-    radial-gradient(ellipse 140% 40% at 50% -10%, rgba(255, 255, 255, 0.06), transparent 55%),
-    linear-gradient(180deg, #1a1d24 0%, #15171c 60%, #111318 100%);
+    /* diagonal sheen — picks up ambient color behind it */
+    linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.08) 47%, rgba(255, 255, 255, 0.02) 56%, transparent 72%),
+    /* top highlight */
+    radial-gradient(ellipse 140% 40% at 50% -10%, rgba(255, 255, 255, 0.08), transparent 55%),
+    /* faint vertical wash */
+    linear-gradient(180deg, rgba(40, 45, 58, 0.3) 0%, rgba(22, 25, 32, 0.25) 60%, rgba(15, 17, 22, 0.35) 100%);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    0 0 0 1.5px rgba(255, 255, 255, 0.03),
-    0 28px 56px -18px rgba(0, 0, 0, 0.5),
+    /* bright outer rim — visible against dark bg */
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 1.5px rgba(0, 0, 0, 0.4),
+    /* lifted drop shadow */
+    0 28px 56px -18px rgba(0, 0, 0, 0.55),
     0 8px 18px -4px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.06),
-    inset 0 -4px 8px -3px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    /* top-edge highlight */
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.12),
+    inset 1px 0 1px rgba(255, 255, 255, 0.06),
+    /* recessed bottom-right */
+    inset 0 -4px 8px -3px rgba(0, 0, 0, 0.45),
+    inset -2px 0 6px -3px rgba(0, 0, 0, 0.3),
+    /* hairline rim */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 /* frosted glass card — glassmorphism for the panels under the hero
