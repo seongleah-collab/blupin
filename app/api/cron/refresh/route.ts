@@ -4,6 +4,7 @@ import { ingestProductHunt } from '@/lib/ingest/producthunt';
 import { ingestHackerNews } from '@/lib/ingest/hackernews';
 import { ingestReddit } from '@/lib/ingest/reddit';
 import { classifyPendingEvents } from '@/lib/classify/events';
+import { backfillProductHuntUrls } from '@/lib/maintenance/backfill_urls';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -28,8 +29,15 @@ async function refreshUser(userId: string) {
     reddit,
     total: ph.inserted + hn.inserted + reddit.inserted,
   };
+  // Resolve any Product Hunt /r/HASH/... tracker URLs on this user's
+  // existing rows so the feed pill shows the real product domain. Capped
+  // per run; future runs will pick up whatever's left.
+  const urlBackfill = await backfillProductHuntUrls(userId, 50).catch((e) => {
+    console.error('[refresh] ph url backfill failed:', e?.message ?? e);
+    return { scanned: 0, resolved: 0 };
+  });
   const classified = await classifyPendingEvents(userId, 25);
-  return { ingested, classified };
+  return { ingested, urlBackfill, classified };
 }
 
 export async function GET(request: NextRequest) {

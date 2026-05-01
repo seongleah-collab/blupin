@@ -88,7 +88,7 @@ export default function ChatPage() {
   // generation in Next 15+ — without it the build bails out. wrap
   // the inner client tree so prerender succeeds.
   return (
-    <Suspense fallback={<div className="h-screen w-screen bg-white dark:bg-neutral-950" />}>
+    <Suspense fallback={<div className="h-screen w-screen bg-white dark:bg-black" />}>
       <ChatPageInner />
     </Suspense>
   );
@@ -312,7 +312,7 @@ function ChatPageInner() {
 
   const composer = (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="relative w-full rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-[0_2px_24px_-12px_rgba(0,0,0,0.15)] focus-within:border-neutral-400 dark:focus-within:border-neutral-600 transition-colors">
+      <div className="relative w-full rounded-3xl glass-pill-card transition-colors">
         <textarea
           ref={textareaRef}
           value={input}
@@ -339,14 +339,9 @@ function ChatPageInner() {
   );
 
   return (
-    <div className="relative flex h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 overflow-hidden">
-      {/* ambient orbs — soft color washes behind the sidebar so the
-          glass has something to refract through. positioned roughly
-          where the sidebar floats (top-left column). */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full blur-3xl opacity-60 dark:opacity-50 bg-[radial-gradient(circle_at_center,rgba(186,209,255,0.65),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(80,110,200,0.35),transparent_65%)]" />
-        <div className="absolute top-1/3 -left-32 w-[360px] h-[360px] rounded-full blur-3xl opacity-50 dark:opacity-40 bg-[radial-gradient(circle_at_center,rgba(220,200,255,0.55),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(120,90,180,0.32),transparent_65%)]" />
-        <div className="absolute bottom-0 -left-20 w-[340px] h-[340px] rounded-full blur-3xl opacity-50 dark:opacity-40 bg-[radial-gradient(circle_at_center,rgba(180,230,220,0.5),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(60,130,150,0.28),transparent_65%)]" />
+    <div className="relative flex h-screen bg-white dark:bg-black text-neutral-900 dark:text-neutral-100 overflow-hidden">
+      <div aria-hidden className="glass-ambient">
+        <span className="orb" />
       </div>
 
       <div className="relative z-10 flex flex-1 min-w-0">
@@ -465,7 +460,7 @@ function ChatPageInner() {
               </div>
             </main>
 
-            <div className="bg-white dark:bg-neutral-950">
+            <div>
               <div className="max-w-2xl mx-auto px-6 pb-6 pt-2">{composer}</div>
             </div>
           </>

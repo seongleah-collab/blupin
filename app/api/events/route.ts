@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export const runtime = 'nodejs';
 
 const COLUMNS =
-  'id, potential_competitor_name, title, summary, recommended_action, threat_level, relevance_score, source, source_url, source_external_url, source_score, source_comment_count, og_title, og_description, og_image_url, og_site_name, published_at, niche_match, event_type';
+  'id, potential_competitor_name, title, summary, recommended_action, threat_level, relevance_score, source, source_url, source_external_url, source_score, source_comment_count, og_title, og_description, og_image_url, og_site_name, published_at, classified_at, niche_match, event_type';
 
 export async function GET(req: Request) {
   const supabase = await createClient();
@@ -29,8 +29,10 @@ export async function GET(req: Request) {
 
   // feed-grade filter: only events the founder actually needs to see.
   // - must name a real competitor (drop nulls and the literal "unknown")
-  // - must either match the founder's niche OR clear a relevance bar
-  // - drop low-threat low-relevance noise outright
+  // - niche_match=true is the gate (the classifier already decided this
+  //   product solves the same problem for the same customer); we no
+  //   longer let high-relevance niche_match=false rows leak through.
+  // - drop low-relevance noise even within niche_match
   const { data, error } = await supabase
     .from('competitor_events')
     .select(COLUMNS)
@@ -38,8 +40,8 @@ export async function GET(req: Request) {
     .eq('classification_status', 'classified')
     .not('potential_competitor_name', 'is', null)
     .not('potential_competitor_name', 'ilike', 'unknown')
-    .or('niche_match.eq.true,relevance_score.gte.0.5')
-    .or('threat_level.neq.low,relevance_score.gte.0.7')
+    .eq('niche_match', true)
+    .gte('relevance_score', 0.6)
     .order('published_at', { ascending: false, nullsFirst: false })
     .order('relevance_score', { ascending: false, nullsFirst: false })
     .limit(120);

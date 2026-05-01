@@ -12,6 +12,7 @@ export default function CompanyPage() {
   const [companyDescription, setCompanyDescription] = useState('');
   const [state, setState] = useState<SaveState>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [reclassifying, setReclassifying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +52,13 @@ export default function CompanyPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? `failed: ${res.status}`);
       setState('saved');
+      setReclassifying(!!data.reclassifying);
+      // Clear the saved badge quickly; leave the reclassifying note up
+      // longer since the actual work continues in the background.
       setTimeout(() => setState('idle'), 2000);
+      if (data.reclassifying) {
+        setTimeout(() => setReclassifying(false), 30_000);
+      }
     } catch (err: any) {
       setError(err.message);
       setState('error');
@@ -95,7 +102,7 @@ export default function CompanyPage() {
               required
             />
           </div>
-          <div className="flex justify-start pt-1">
+          <div className="flex items-center gap-3 pt-1">
             <button
               type="submit"
               disabled={state === 'saving'}
@@ -103,6 +110,11 @@ export default function CompanyPage() {
             >
               save company
             </button>
+            {reclassifying && (
+              <span className="text-[12px] text-neutral-500 dark:text-neutral-400">
+                re-syncing competitors, ingesting, and re-scoring your feed against the new description… this takes 1–2 min. refresh /competitors and /feed when ready.
+              </span>
+            )}
           </div>
         </form>
       )}

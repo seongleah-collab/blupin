@@ -1,5 +1,6 @@
 import { GraphQLClient, gql } from 'graphql-request';
 import { createClient } from '@supabase/supabase-js';
+import { resolveRedirect } from '@/lib/unfurl';
 
 // Service-role client bypasses RLS — we're inserting on behalf of a user server-side
 function supabaseAdmin() {
@@ -69,13 +70,32 @@ export async function ingestProductHunt(userId: string, hoursBack = 48) {
   const posts = data.posts.edges.map((e) => e.node);
   if (posts.length === 0) return { fetched: 0, inserted: 0 };
 
-  const rows = posts.map((p) => ({
+  // PH's `website` field is a /r/HASH/... click-tracker that points back to
+  // producthunt.com — unwrap it to the real product URL so the feed pill
+  // shows the actual destination domain (e.g. "drizzle.ai" not "producthunt.com").
+  const resolvedWebsites = await Promise.all(
+    posts.map(async (p) => {
+      if (!p.website) return null;
+      try {
+        const u = new URL(p.website);
+        if (u.hostname.endsWith('producthunt.com') && u.pathname.startsWith('/r/')) {
+          const resolved = await resolveRedirect(p.website);
+          return resolved ?? p.website;
+        }
+        return p.website;
+      } catch {
+        return p.website;
+      }
+    })
+  );
+
+  const rows = posts.map((p, i) => ({
     user_id: userId,
     competitor_id: null,
     potential_competitor_name: p.name,
     source: 'product_hunt',
     source_url: p.url,
-    source_external_url: p.website,
+    source_external_url: resolvedWebsites[i],
     source_id: p.id,
     source_score: p.votesCount,
     source_comment_count: null,

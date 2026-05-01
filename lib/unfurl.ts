@@ -13,6 +13,28 @@ export type Unfurl = {
 const UA =
   'Mozilla/5.0 (compatible; blupin-unfurl/0.1; +https://blupin.ai)';
 
+// Follow redirects on `url` and return the final destination. Used to
+// unwrap Product Hunt's `/r/HASH/...` click-tracker URLs into the
+// product's actual website. Returns null on any failure so callers
+// can fall back to the original URL.
+export async function resolveRedirect(url: string): Promise<string | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'User-Agent': UA, Accept: 'text/html,*/*' },
+      signal: controller.signal,
+      redirect: 'follow',
+    });
+    return res.url || null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function decode(s: string | null | undefined): string | null {
   if (!s) return null;
   // basic HTML entity decode for the handful that show up in og tags

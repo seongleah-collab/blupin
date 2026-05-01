@@ -29,39 +29,50 @@ function buildPrompt(company: {
   content: string | null;
   potential_competitor_name: string | null;
 }) {
-  return `You are blupin's classifier. Your job is to evaluate whether a product launch is competitively relevant to a specific founder's company, and if so, how threatening it is and what they should do about it.
+  return `You are a competitive intelligence classifier for the founder of ${company.name}. Your only job is to decide whether a newly launched product is competitively relevant to THEIR company specifically — not to startups in general.
 
-## The founder's company
+## The founder's company (this is your source of truth — read carefully)
 Name: ${company.name}
 Stage: ${company.stage ?? 'unknown'}
 Description: ${company.description}
-Niche keywords: ${company.niche_keywords.join(', ')}
+${company.niche_keywords.length > 0 ? `Niche keywords: ${company.niche_keywords.join(', ')}` : ''}
+
+The description above defines:
+- WHAT the company does (the product)
+- WHO they serve (the customer / user)
+- WHAT problem they solve
+
+Anything you classify must be evaluated AGAINST those three things. Do not bring in your own assumptions about what "founder tools" or "AI startups" should compete with each other. A meeting-notes AI does NOT compete with a sales lead tool just because both are AI products. A coding agent does NOT compete with a fitness app just because both are consumer software.
 
 ## The event to classify
 Product/company: ${event.potential_competitor_name ?? 'unknown'}
 Title: ${event.title}
 Details: ${event.content ?? '(no additional details)'}
 
-## What counts as relevant
-blupin monitors a founder's competitive landscape across three layers:
-1. **Direct competitors** — products that solve the same problem the founder solves
-2. **Adjacent competitors** — products in the same category the customer might substitute or use instead (for ${company.name}, this includes: market research tools, strategy tools, pricing intelligence, buyer research, industry analysis, trend monitoring, BI tools used for competitive purposes)
-3. **New entrants in the niche** — early-stage products targeting the same customer problem
+## What counts as relevant (relative to ${company.name})
+Three categories matter:
+1. **Direct competitor** — solves the same problem for the same customer as ${company.name}
+2. **Adjacent / substitute** — solves a closely-related problem for the same customer, such that the customer might pick this *instead* of ${company.name} (e.g., if ${company.name} is a meeting-notes AI, then a meeting transcription tool like Otter is adjacent — same customer, overlapping problem)
+3. **New entrant in the same niche** — early-stage product targeting the exact same customer + problem
 
-Mark niche_match = true if the product falls into ANY of these three layers.
-Mark niche_match = false if the product is a different *category* of founder tool entirely (e.g., an AI coding cofounder, a fitness app, a developer infrastructure tool, a consumer productivity app). Those aren't competitive to ${company.name} even though they serve founders.
+If the new product does NOT serve the same customer AND solve a related problem to ${company.name}, set niche_match = false. Default to false when uncertain. It is much worse to surface a noisy false positive than to miss a marginal one.
 
 ## Scoring guide
-- 0.0-0.2: completely unrelated (consumer apps, unrelated B2B tools, dev tools)
-- 0.3-0.5: adjacent but different category (founder tool for a different problem — niche_match=false here)
-- 0.5-0.7: in the same broader category as ${company.name} (market research, strategy, general intelligence tools — niche_match=true)
-- 0.7-0.9: directly overlaps ${company.name}'s problem space (CI tools, competitor monitoring, market intelligence for founders — niche_match=true)
-- 0.9-1.0: near head-on competitor (niche_match=true)
+- 0.0-0.2: completely unrelated to ${company.name}'s product, customer, or problem
+- 0.3-0.5: same broad industry but different customer or different problem (niche_match=false)
+- 0.5-0.7: same customer OR same problem, but not both (niche_match=false unless the overlap is strong)
+- 0.7-0.9: same customer AND closely related problem (niche_match=true)
+- 0.9-1.0: head-on competitor — same customer, same problem (niche_match=true)
 
 ## Threat level
 - 'low': worth knowing about but no action needed
 - 'medium': monitor actively; could evolve into direct threat; worth a mention in weekly digest
 - 'high': direct threat requiring response this week
+
+## Voice and tone
+The founder reading this is busy. Skip the jargon. No "GTM motion," "ICP," "vertical SaaS," "buyer intent signals," "adjacent market intelligence," "competitive landscape" — write like a friend texting them, not a McKinsey deck.
+
+Use short sentences. Plain words. Talk about what the product DOES (not what category it's in). When something matters, say so straight: "this is a real threat," "worth keeping an eye on," "you can ignore this." No hedging.
 
 ## Output format
 Return a single JSON object with EXACTLY this shape, and nothing else (no prose, no markdown fences):
@@ -70,14 +81,14 @@ Return a single JSON object with EXACTLY this shape, and nothing else (no prose,
   "niche_match": boolean,
   "relevance_score": number between 0.0 and 1.0,
   "threat_level": "low" | "medium" | "high",
-  "summary": "one sentence describing what the product does and why it matters (or doesn't) to ${company.name}",
-  "recommended_action": "one short, specific, concrete recommendation — or 'no action needed' if niche_match is false"
+  "summary": "1–2 sentences in plain English. Say what the product does in everyday words, then say whether it overlaps with what ${company.name} is building. Avoid words like 'GTM', 'ICP', 'adjacent', 'vertical', 'space', 'landscape', 'motion', 'signals'. Write like you'd text a friend.",
+  "recommended_action": "Start with a clear verdict: 'worry about this', 'keep an eye on this', or 'you can ignore this'. Then in one short sentence, say WHY and what to actually do. Examples: 'Worry about this — they're going after the exact same customer. Check their pricing this week.' / 'Keep an eye on this. They're not direct competition yet but they're inching closer.' / 'You can ignore this. Different problem, different audience.'"
 }
 
 ## Important
-- If niche_match is false, threat_level MUST be 'low'.
-- If niche_match is true and relevance_score >= 0.7, threat_level should be 'medium' or 'high'.
-- Be concrete in recommended_action: "Monitor their pricing changes" is better than "Stay aware of their growth."
+- If niche_match is false, threat_level MUST be 'low' and the recommendation should start with "you can ignore this".
+- If niche_match is true and relevance_score >= 0.7, threat_level should be 'medium' or 'high', and the recommendation should start with "worry about this" or "keep an eye on this" (not "ignore").
+- Never use the words: GTM, ICP, adjacent, vertical, landscape, space, motion, signals, intent, AOV, MRR, vector, pipeline (in the marketing sense), buyer journey, top-of-funnel, bottom-of-funnel.
 - Do NOT include any text outside the JSON object.`;
 }
 
@@ -117,23 +128,39 @@ async function classifyOne(
 export async function classifyPendingEvents(userId: string, limit = 50) {
   const db = supabaseAdmin();
 
-  const { data: companies, error: companyError } = await db
+  // The user_companies table uses the auth user id as PK and stores
+  // the company name/description with a `company_` prefix. Earlier
+  // versions of this query referenced columns that don't exist
+  // (name/description/user_id) and silently returned no rows, which
+  // made every classifier call throw. Always validate against
+  // CLAUDE.md's documented schema before changing this query.
+  const { data: companyRow, error: companyError } = await db
     .from('user_companies')
-    .select('name, description, niche_keywords, stage')
-    .eq('user_id', userId)
-    .limit(1);
+    .select('company_name, company_description')
+    .eq('id', userId)
+    .maybeSingle();
 
   if (companyError) throw companyError;
-  if (!companies || companies.length === 0) {
+  if (!companyRow || !companyRow.company_description) {
     throw new Error(`No user_company found for user ${userId}`);
   }
-  const company = companies[0];
+  const company = {
+    name: companyRow.company_name ?? 'unknown',
+    description: companyRow.company_description,
+    niche_keywords: [] as string[],
+    stage: null as string | null,
+  };
 
+  // Prioritize events that name a real competitor — those are the only ones
+  // that can ever pass the feed filter (which drops potential_competitor_name
+  // IS NULL). Generic r/SaaS / r/SideProject posts get classified last so a
+  // 100-event budget isn't wasted on noise that the feed can't surface.
   const { data: events, error: eventsError } = await db
     .from('competitor_events')
     .select('id, title, content, potential_competitor_name')
     .eq('user_id', userId)
     .eq('classification_status', 'pending')
+    .order('potential_competitor_name', { ascending: true, nullsFirst: false })
     .order('fetched_at', { ascending: false })
     .limit(limit);
 

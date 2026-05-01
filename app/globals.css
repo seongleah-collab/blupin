@@ -188,73 +188,84 @@ body {
     inset 0 0 0 1px rgba(15, 23, 42, 0.08);
 }
 
-/* glass pill sidebar — same shadow language as .glass-card but with
-   a subtler interior so it reads as a tall floating column rather
-   than a content panel. used by /chat's left rail. dark-mode variant
-   swaps to a tinted slate body so it stays visible on the near-black
-   chat background. */
+/* content card pill — flat panel, no glass effects. */
+.glass-pill-card {
+  position: relative;
+  background-color: #f7f8fb;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 16px -8px rgba(15, 23, 42, 0.1);
+}
+
+.dark .glass-pill-card {
+  background-color: #0c0c0c;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 16px -8px rgba(0, 0, 0, 0.5);
+}
+
+/* shared ambient backdrop — three soft color orbs that sit behind
+   glass surfaces so backdrop-filter has something to refract through.
+   Place inside a position:relative parent. */
+.glass-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.glass-ambient::before,
+.glass-ambient::after,
+.glass-ambient > .orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(64px);
+  content: '';
+}
+.glass-ambient::before {
+  top: -120px;
+  left: -80px;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(186, 209, 255, 0.55), transparent 65%);
+  opacity: 0.7;
+}
+.glass-ambient::after {
+  top: 30%;
+  right: -120px;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(220, 200, 255, 0.5), transparent 65%);
+  opacity: 0.65;
+}
+.glass-ambient > .orb {
+  bottom: -100px;
+  left: 30%;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(180, 230, 220, 0.45), transparent 65%);
+  opacity: 0.6;
+}
+/* dark mode: hide the orbs entirely so the bg reads as pure black.
+   the glass cards still get their frosted look from the box-shadow
+   rim/highlights even without ambient color to refract. */
+.dark .glass-ambient::before,
+.dark .glass-ambient::after,
+.dark .glass-ambient > .orb {
+  display: none;
+}
+
+/* sidebar pill — flat panel, no glass effects. solid bg, hairline
+   border, soft drop shadow for elevation. */
 .glass-pill-sidebar {
   position: relative;
-  /* heavily translucent body so ambient color behind it bleeds
-     through the backdrop blur. the layered gradients on top sell
-     the curved-glass illusion (highlight, sheen, shadowed corner). */
-  background-color: rgba(248, 250, 255, 0.45);
-  background-image:
-    /* diagonal sheen — narrow band of brighter light running
-       top-right → bottom-left, mimicking light catching curved glass */
-    linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.45) 47%, rgba(255, 255, 255, 0.12) 56%, transparent 72%),
-    /* bottom-right cool shadow — gives the pill a dim corner so it
-       reads as 3D, not flat */
-    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(150, 175, 215, 0.22), transparent 60%),
-    /* top-left bright highlight */
-    radial-gradient(ellipse 70% 55% at 0% 0%, rgba(255, 255, 255, 0.7), transparent 65%),
-    /* base vertical body — very faint, lets backdrop carry color */
-    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(240, 244, 252, 0.25) 55%, rgba(225, 232, 245, 0.3) 100%);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  box-shadow:
-    /* bright outer rim — the defining edge of the glass */
-    0 0 0 1px rgba(255, 255, 255, 0.55),
-    0 0 0 1.5px rgba(15, 23, 42, 0.05),
-    /* lifted drop shadow */
-    0 32px 64px -20px rgba(30, 45, 90, 0.2),
-    0 10px 22px -6px rgba(30, 45, 90, 0.1),
-    /* bright inset highlight along the top edge */
-    inset 0 2px 1px rgba(255, 255, 255, 0.95),
-    inset 1px 0 1.5px rgba(255, 255, 255, 0.8),
-    /* recessed inset on the bottom-right */
-    inset 0 -5px 10px -4px rgba(70, 90, 140, 0.15),
-    inset -2px 0 8px -4px rgba(70, 90, 140, 0.1),
-    /* hairline rim */
-    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  background-color: #f4f5f9;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 24px -10px rgba(15, 23, 42, 0.12);
 }
 
 .dark .glass-pill-sidebar {
-  background-color: rgba(20, 22, 28, 0.4);
-  background-image:
-    /* diagonal sheen — picks up ambient color behind it */
-    linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.08) 47%, rgba(255, 255, 255, 0.02) 56%, transparent 72%),
-    /* top highlight */
-    radial-gradient(ellipse 140% 40% at 50% -10%, rgba(255, 255, 255, 0.08), transparent 55%),
-    /* faint vertical wash */
-    linear-gradient(180deg, rgba(40, 45, 58, 0.3) 0%, rgba(22, 25, 32, 0.25) 60%, rgba(15, 17, 22, 0.35) 100%);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  box-shadow:
-    /* bright outer rim — visible against dark bg */
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 0 0 1.5px rgba(0, 0, 0, 0.4),
-    /* lifted drop shadow */
-    0 28px 56px -18px rgba(0, 0, 0, 0.55),
-    0 8px 18px -4px rgba(0, 0, 0, 0.4),
-    /* top-edge highlight */
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.12),
-    inset 1px 0 1px rgba(255, 255, 255, 0.06),
-    /* recessed bottom-right */
-    inset 0 -4px 8px -3px rgba(0, 0, 0, 0.45),
-    inset -2px 0 6px -3px rgba(0, 0, 0, 0.3),
-    /* hairline rim */
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background-color: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.5);
 }
 
 /* frosted glass card — glassmorphism for the panels under the hero
