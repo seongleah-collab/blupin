@@ -62,8 +62,14 @@ const toRow = (h: HNHit, eventType: 'product_launch' | 'discussion') => ({
     potential_competitor_name:
       eventType === 'product_launch' ? parseShowHNName(h.title!) : null,
     source: 'hacker_news',
-    source_url: h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
+    // source_url always points at the HN discussion page, so users can
+    // jump into the comments. source_external_url is the article itself
+    // when the submission links out — we expose both in the feed UI.
+    source_url: `https://news.ycombinator.com/item?id=${h.objectID}`,
+    source_external_url: h.url,
     source_id: h.objectID,
+    source_score: h.points,
+    source_comment_count: h.num_comments,
     event_type: eventType,
     title: h.title!,
     content: [

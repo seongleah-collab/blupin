@@ -75,7 +75,10 @@ export async function ingestProductHunt(userId: string, hoursBack = 48) {
     potential_competitor_name: p.name,
     source: 'product_hunt',
     source_url: p.url,
+    source_external_url: p.website,
     source_id: p.id,
+    source_score: p.votesCount,
+    source_comment_count: null,
     event_type: 'product_launch',
     title: `${p.name} — ${p.tagline}`,
     content: [

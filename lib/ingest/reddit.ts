@@ -56,26 +56,35 @@ export async function ingestReddit(userId: string, hoursBack = 24) {
   const posts = results.flat();
   if (posts.length === 0) return { fetched: 0, inserted: 0 };
 
-  const rows = posts.map((p) => ({
-    user_id: userId,
-    competitor_id: null,
-    potential_competitor_name: null,
-    source: 'reddit',
-    source_url: `https://www.reddit.com${p.permalink}`,
-    source_id: p.id,
-     event_type: p.subreddit.toLowerCase() === 'saas' ? 'discussion' : 'product_launch',
-         title: `[r/${p.subreddit}] ${p.title}`,
-    content: [
-      p.selftext || '',
-      p.url && !p.url.includes('reddit.com') ? `Link: ${p.url}` : '',
-      `Upvotes: ${p.score}`,
-      `Comments: ${p.num_comments}`,
-      p.link_flair_text ? `Flair: ${p.link_flair_text}` : '',
-    ].filter(Boolean).join('\n'),
-    raw_payload: p,
-    published_at: new Date(p.created_utc * 1000).toISOString(),
-    classification_status: 'pending' as const,
-  }));
+  const rows = posts.map((p) => {
+    // when the reddit post links out to a real article, surface that
+    // url separately. self-posts (p.url points back at reddit) get null.
+    const externalUrl =
+      p.url && !p.url.includes('reddit.com') ? p.url : null;
+    return {
+      user_id: userId,
+      competitor_id: null,
+      potential_competitor_name: null,
+      source: 'reddit',
+      source_url: `https://www.reddit.com${p.permalink}`,
+      source_external_url: externalUrl,
+      source_id: p.id,
+      source_score: p.score,
+      source_comment_count: p.num_comments,
+      event_type: p.subreddit.toLowerCase() === 'saas' ? 'discussion' : 'product_launch',
+      title: `[r/${p.subreddit}] ${p.title}`,
+      content: [
+        p.selftext || '',
+        externalUrl ? `Link: ${externalUrl}` : '',
+        `Upvotes: ${p.score}`,
+        `Comments: ${p.num_comments}`,
+        p.link_flair_text ? `Flair: ${p.link_flair_text}` : '',
+      ].filter(Boolean).join('\n'),
+      raw_payload: p,
+      published_at: new Date(p.created_utc * 1000).toISOString(),
+      classification_status: 'pending' as const,
+    };
+  });
 
   const db = supabaseAdmin();
   const { data, error } = await db

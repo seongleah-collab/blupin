@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export const runtime = 'nodejs';
 
 const COLUMNS =
-  'id, potential_competitor_name, title, summary, recommended_action, threat_level, relevance_score, source, published_at, niche_match, event_type';
+  'id, potential_competitor_name, title, summary, recommended_action, threat_level, relevance_score, source, source_url, source_external_url, source_score, source_comment_count, og_title, og_description, og_image_url, og_site_name, published_at, niche_match, event_type';
 
 export async function GET(req: Request) {
   const supabase = await createClient();

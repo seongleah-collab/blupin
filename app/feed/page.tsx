@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Fraunces } from 'next/font/google';
 import { createClient } from '@/lib/supabase/client';
 import Sidebar, { ConversationListItem, SidebarUser } from '../chat/Sidebar';
+import Sparkline, { SparklinePoint } from '../components/Sparkline';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -23,10 +24,38 @@ type FeedEvent = {
   threat_level: 'high' | 'medium' | 'low' | string | null;
   relevance_score: number | null;
   source: string;
+  source_url: string | null;
+  source_external_url: string | null;
+  source_score: number | null;
+  source_comment_count: number | null;
+  og_title: string | null;
+  og_description: string | null;
+  og_image_url: string | null;
+  og_site_name: string | null;
   published_at: string | null;
   niche_match: boolean | null;
   event_type: string | null;
 };
+
+const SOURCE_LABELS: Record<string, string> = {
+  product_hunt: 'Product Hunt',
+  hacker_news: 'Hacker News',
+  reddit: 'Reddit',
+};
+
+function sourceLabel(s: string): string {
+  return SOURCE_LABELS[s] ?? s.replace(/_/g, ' ');
+}
+
+// pretty domain for the external link badge — e.g. "techcrunch.com"
+function prettyHost(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return null;
+  }
+}
 
 const GROUP_ORDER = ['today', 'yesterday', 'this week', 'earlier this month', 'older'] as const;
 type Group = (typeof GROUP_ORDER)[number];
@@ -95,6 +124,96 @@ export default function FeedPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+  // tracks which event ids we've already kicked off an unfurl fetch for
+  // in this session, so re-expanding doesn't re-hit the API.
+  const [unfurled, setUnfurled] = useState<Set<string>>(new Set());
+  // per-competitor activity series cache (keyed by lowercase name).
+  const [activity, setActivity] = useState<Record<string, SparklinePoint[]>>({});
+  // inline-reader cache (keyed by event id). undefined = not loaded,
+  // null = load failed, object = loaded article.
+  type ReaderArticle = {
+    title: string | null;
+    byline: string | null;
+    excerpt: string | null;
+    contentHtml: string;
+    siteName: string | null;
+  };
+  const [articles, setArticles] = useState<Record<string, ReaderArticle | null>>({});
+  const [loadingArticle, setLoadingArticle] = useState<Set<string>>(new Set());
+  const [openArticleId, setOpenArticleId] = useState<string | null>(null);
+
+  function toggleReader(id: string) {
+    if (openArticleId === id) {
+      setOpenArticleId(null);
+      return;
+    }
+    setOpenArticleId(id);
+    if (articles[id] !== undefined || loadingArticle.has(id)) return;
+    setLoadingArticle((prev) => new Set(prev).add(id));
+    fetch(`/api/events/${id}/article`)
+      .then(async (r) => (r.ok ? r.json() : { article: null }))
+      .then((data) => {
+        setArticles((prev) => ({ ...prev, [id]: data.article ?? null }));
+      })
+      .catch(() => setArticles((prev) => ({ ...prev, [id]: null })))
+      .finally(() => {
+        setLoadingArticle((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      });
+  }
+
+  function loadActivity(name: string) {
+    const key = name.toLowerCase();
+    if (activity[key]) return;
+    fetch(`/api/competitors/${encodeURIComponent(name)}/activity`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data?.series) return;
+        setActivity((prev) => ({ ...prev, [key]: data.series }));
+      })
+      .catch(() => {});
+  }
+
+  function expandEvent(id: string) {
+    const isOpen = expandedId === id;
+    setExpandedId(isOpen ? null : id);
+    if (isOpen) return;
+
+    // lazy unfurl: if this event has no og data yet, fetch it. on
+    // success, patch the in-memory row so the preview card renders
+    // without a refresh.
+    const ev = events.find((e) => e.id === id);
+    if (!ev) return;
+    // kick off the activity sparkline fetch in parallel with unfurl
+    if (ev.potential_competitor_name) loadActivity(ev.potential_competitor_name);
+
+    if (unfurled.has(id) || ev.og_image_url || ev.og_description) return;
+    if (!ev.source_url && !ev.source_external_url) return;
+
+    setUnfurled((prev) => new Set(prev).add(id));
+    fetch(`/api/events/${id}/unfurl`, { method: 'POST' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return;
+        setEvents((prev) =>
+          prev.map((e) =>
+            e.id === id
+              ? {
+                  ...e,
+                  og_title: data.og_title ?? e.og_title,
+                  og_description: data.og_description ?? e.og_description,
+                  og_image_url: data.og_image_url ?? e.og_image_url,
+                  og_site_name: data.og_site_name ?? e.og_site_name,
+                }
+              : e
+          )
+        );
+      })
+      .catch(() => {});
+  }
 
   useEffect(() => {
     const supabase = createClient();
@@ -217,7 +336,7 @@ export default function FeedPage() {
                         >
                           <button
                             type="button"
-                            onClick={() => setExpandedId(isOpen ? null : e.id)}
+                            onClick={() => expandEvent(e.id)}
                             className="w-full text-left px-5 py-4 flex items-start gap-4 hover:bg-white/40 dark:hover:bg-neutral-800/50 transition-colors"
                           >
                             <span
@@ -265,7 +384,7 @@ export default function FeedPage() {
                           </button>
 
                           {isOpen && (
-                            <div className="px-5 pb-5 pt-4 space-y-3 border-t border-neutral-200/70 dark:border-neutral-800">
+                            <div className="px-5 pb-5 pt-4 space-y-4 border-t border-neutral-200/70 dark:border-neutral-800">
                               {e.summary && (
                                 <p className="text-[14px] text-neutral-700 dark:text-neutral-300 leading-relaxed">
                                   {e.summary}
@@ -276,16 +395,190 @@ export default function FeedPage() {
                                   {e.recommended_action}
                                 </p>
                               )}
-                              <Link
-                                href={`/chat?event=${e.id}`}
-                                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[13px] font-medium bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:opacity-90 transition-opacity"
-                              >
-                                ask blupin
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="5" y1="12" x2="19" y2="12" />
-                                  <polyline points="12 5 19 12 12 19" />
-                                </svg>
-                              </Link>
+
+                              {/* unfurl preview — image + og description for the
+                                  external article when we have one. only renders
+                                  if Phase-2 unfurl populated og_* columns. */}
+                              {(e.og_image_url || e.og_description) && (e.source_external_url || e.source_url) && (
+                                <a
+                                  href={e.source_external_url ?? e.source_url ?? '#'}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/60 dark:bg-neutral-900/60 hover:bg-white/80 dark:hover:bg-neutral-900 transition-colors overflow-hidden"
+                                >
+                                  {e.og_image_url && (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img
+                                      src={e.og_image_url}
+                                      alt=""
+                                      className="w-28 h-28 object-cover shrink-0"
+                                      loading="lazy"
+                                    />
+                                  )}
+                                  <div className="flex-1 min-w-0 py-2.5 pr-3">
+                                    {e.og_site_name && (
+                                      <div className="text-[10px] uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
+                                        {e.og_site_name}
+                                      </div>
+                                    )}
+                                    {e.og_title && (
+                                      <div className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100 line-clamp-2 leading-snug">
+                                        {e.og_title}
+                                      </div>
+                                    )}
+                                    {e.og_description && (
+                                      <div className="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-snug">
+                                        {e.og_description}
+                                      </div>
+                                    )}
+                                  </div>
+                                </a>
+                              )}
+
+                              {/* per-competitor activity sparkline — 30-day
+                                  event volume for the named competitor. shows
+                                  whether they're heating up or quiet. */}
+                              {e.potential_competitor_name && (() => {
+                                const key = e.potential_competitor_name.toLowerCase();
+                                const series = activity[key];
+                                if (!series) return null;
+                                const total = series.reduce((s, p) => s + p.count, 0);
+                                if (total === 0) return null;
+                                return (
+                                  <Link
+                                    href={`/competitor/${encodeURIComponent(e.potential_competitor_name)}`}
+                                    className="flex items-center gap-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/60 hover:bg-white/80 dark:hover:bg-neutral-900 transition-colors px-4 py-3"
+                                  >
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-[11px] uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                                        {e.potential_competitor_name} · last 30 days
+                                      </div>
+                                      <div className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100 mt-0.5 tabular-nums">
+                                        {total} {total === 1 ? 'event' : 'events'}
+                                      </div>
+                                    </div>
+                                    <div className="text-neutral-700 dark:text-neutral-300">
+                                      <Sparkline series={series} width={140} height={32} />
+                                    </div>
+                                  </Link>
+                                );
+                              })()}
+
+                              {/* source row — discussion link, external article
+                                  link (if any), per-source engagement metrics. */}
+                              <div className="flex items-center flex-wrap gap-2 text-[12px]">
+                                {e.source_url && (
+                                  <a
+                                    href={e.source_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                                  >
+                                    view on {sourceLabel(e.source)}
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M7 17L17 7" />
+                                      <path d="M7 7h10v10" />
+                                    </svg>
+                                  </a>
+                                )}
+                                {e.source_external_url && prettyHost(e.source_external_url) && (
+                                  <a
+                                    href={e.source_external_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                                  >
+                                    {prettyHost(e.source_external_url)}
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M7 17L17 7" />
+                                      <path d="M7 7h10v10" />
+                                    </svg>
+                                  </a>
+                                )}
+                                {e.source_score != null && (
+                                  <span className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 tabular-nums">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="18 15 12 9 6 15" />
+                                    </svg>
+                                    {e.source_score.toLocaleString()}
+                                  </span>
+                                )}
+                                {e.source_comment_count != null && (
+                                  <span className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 tabular-nums">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                    </svg>
+                                    {e.source_comment_count.toLocaleString()}
+                                  </span>
+                                )}
+                                {(e.source_external_url || e.source_url) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleReader(e.id)}
+                                    className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full transition-colors ${
+                                      openArticleId === e.id
+                                        ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                                    }`}
+                                  >
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                                    </svg>
+                                    {openArticleId === e.id ? 'close reader' : 'read here'}
+                                  </button>
+                                )}
+                                <Link
+                                  href={`/chat?event=${e.id}`}
+                                  className="ml-auto inline-flex items-center gap-1.5 h-8 px-4 rounded-full font-medium bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:opacity-90 transition-opacity"
+                                >
+                                  ask blupin
+                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                    <polyline points="12 5 19 12 12 19" />
+                                  </svg>
+                                </Link>
+                              </div>
+
+                              {/* inline reader pane — opens when "read here"
+                                  is clicked. fetched lazily, scoped to the
+                                  card so multiple readers can be open. */}
+                              {openArticleId === e.id && (
+                                <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 max-h-[60vh] overflow-y-auto">
+                                  {loadingArticle.has(e.id) ? (
+                                    <div className="text-[13px] text-neutral-500 dark:text-neutral-400">loading article…</div>
+                                  ) : articles[e.id] === null ? (
+                                    <div className="text-[13px] text-neutral-500 dark:text-neutral-400">
+                                      couldn&apos;t extract this article — try{' '}
+                                      <a
+                                        href={e.source_external_url ?? e.source_url ?? '#'}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="underline"
+                                      >
+                                        opening the source
+                                      </a>
+                                      .
+                                    </div>
+                                  ) : articles[e.id] ? (
+                                    <article className="reader-content">
+                                      {articles[e.id]!.title && (
+                                        <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-1 leading-tight">
+                                          {articles[e.id]!.title}
+                                        </h2>
+                                      )}
+                                      <div className="text-[12px] text-neutral-500 dark:text-neutral-400 mb-4 flex flex-wrap gap-x-3">
+                                        {articles[e.id]!.siteName && <span>{articles[e.id]!.siteName}</span>}
+                                        {articles[e.id]!.byline && <span>{articles[e.id]!.byline}</span>}
+                                      </div>
+                                      <div
+                                        className="text-[14px] text-neutral-700 dark:text-neutral-300 leading-relaxed space-y-3"
+                                        dangerouslySetInnerHTML={{ __html: articles[e.id]!.contentHtml }}
+                                      />
+                                    </article>
+                                  ) : null}
+                                </div>
+                              )}
                             </div>
                           )}
                         </li>
