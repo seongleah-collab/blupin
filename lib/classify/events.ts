@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { notifyUser } from '@/lib/push/notify';
+import { severityFromLevel } from '@/lib/severity';
 
 function supabaseAdmin(): SupabaseClient {
   return createClient(
@@ -157,7 +159,7 @@ export async function classifyPendingEvents(userId: string, limit = 50) {
   // 100-event budget isn't wasted on noise that the feed can't surface.
   const { data: events, error: eventsError } = await db
     .from('competitor_events')
-    .select('id, title, content, potential_competitor_name')
+    .select('id, title, content, potential_competitor_name, source')
     .eq('user_id', userId)
     .eq('classification_status', 'pending')
     .order('potential_competitor_name', { ascending: true, nullsFirst: false })
@@ -189,6 +191,29 @@ export async function classifyPendingEvents(userId: string, limit = 50) {
 
       if (updateError) throw updateError;
       classified++;
+
+      // Push the founder a notification when a real threat lands. notifyUser
+      // checks the user's preferences (enabled + min_severity) and silently
+      // no-ops if no devices are subscribed, so this is safe to fire on every
+      // classified event.
+      if (result.niche_match) {
+        const severity = severityFromLevel(result.threat_level, result.relevance_score);
+        try {
+          await notifyUser(
+            userId,
+            {
+              title: `${event.potential_competitor_name ?? 'a competitor'} just shipped something`,
+              body: result.summary.length > 180 ? result.summary.slice(0, 177) + '…' : result.summary,
+              url: `/feed?event=${event.id}`,
+              tag: `event-${event.id}`,
+              requireInteraction: severity >= 9,
+            },
+            { severity }
+          );
+        } catch (notifyErr: any) {
+          console.error(`[classify] notify failed for event ${event.id}:`, notifyErr.message);
+        }
+      }
     } catch (err: any) {
       console.error(`[classify] event ${event.id} failed:`, err.message);
       await db

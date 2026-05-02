@@ -25,6 +25,29 @@ function nameFromEmail(email: string | undefined | null): string {
   return first.toLowerCase();
 }
 
+function renderInlineBold(text: string, keyStart: number): { nodes: React.ReactNode[]; nextKey: number } {
+  const nodes: React.ReactNode[] = [];
+  const regex = /\*\*([^*\n]+?)\*\*/g;
+  let lastIndex = 0;
+  let key = keyStart;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(<span key={key++}>{text.slice(lastIndex, match.index)}</span>);
+    }
+    nodes.push(
+      <strong key={key++} className="font-semibold text-neutral-900 dark:text-neutral-50">
+        {match[1]}
+      </strong>
+    );
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    nodes.push(<span key={key++}>{text.slice(lastIndex)}</span>);
+  }
+  return { nodes, nextKey: key };
+}
+
 function renderAssistantContent(content: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
   const regex = /\[severity:(\d+)\]\s*/g;
@@ -33,7 +56,9 @@ function renderAssistantContent(content: string): React.ReactNode[] {
   let key = 0;
   while ((match = regex.exec(content)) !== null) {
     if (match.index > lastIndex) {
-      parts.push(<span key={key++}>{content.slice(lastIndex, match.index)}</span>);
+      const { nodes, nextKey } = renderInlineBold(content.slice(lastIndex, match.index), key);
+      parts.push(...nodes);
+      key = nextKey;
     }
     const n = parseInt(match[1], 10);
     const hue = severityHue(n);
@@ -65,7 +90,8 @@ function renderAssistantContent(content: string): React.ReactNode[] {
     lastIndex = regex.lastIndex;
   }
   if (lastIndex < content.length) {
-    parts.push(<span key={key++}>{content.slice(lastIndex)}</span>);
+    const { nodes } = renderInlineBold(content.slice(lastIndex), key);
+    parts.push(...nodes);
   }
   return parts.length > 0 ? parts : [content];
 }
