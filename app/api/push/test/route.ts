@@ -10,11 +10,13 @@ export async function POST() {
   if (!user) return NextResponse.json({ error: 'not authenticated' }, { status: 401 });
 
   try {
+    const stamp = new Date().toLocaleTimeString();
     const result = await notifyUser(user.id, {
-      title: 'blupin test ping',
+      title: `blupin test ping · ${stamp}`,
       body: 'notifications are working — we’ll ping you when something real moves.',
       url: '/feed',
-      tag: 'blupin-test',
+      // unique tag per send so macOS/Chrome doesn't dedupe banners.
+      tag: `blupin-test-${Date.now()}`,
     });
     return NextResponse.json({ ok: true, ...result });
   } catch (err: any) {
