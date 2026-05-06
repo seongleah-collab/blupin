@@ -283,9 +283,14 @@ function ChatPageInner() {
       if (res.status === 402) {
         const body = await res.json().catch(() => null) as { code?: string; error?: string } | null;
         const code = body?.code === 'message_limit_reached' ? 'message_limit_reached' : 'no_subscription';
-        // roll back the optimistic user + empty assistant messages so the
-        // chat doesn't show a broken half-turn behind the modal.
-        setMessages((prev) => prev.slice(0, -2));
+        const errorText = code === 'message_limit_reached'
+          ? "you've hit your monthly message limit — upgrade to keep chatting."
+          : 'your trial has ended. upgrade to keep chatting with blupin.';
+        setMessages((prev) => {
+          const next = [...prev];
+          next[next.length - 1] = { role: 'assistant', content: errorText };
+          return next;
+        });
         setPaywall({ code, message: body?.error });
         return;
       }
