@@ -1,7 +1,11 @@
 'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import { Fraunces } from 'next/font/google'
 import Wordmark from '@/app/components/Wordmark'
+import { createClient } from '@/lib/supabase/client'
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -10,7 +14,47 @@ const fraunces = Fraunces({
   display: 'swap',
 })
 
-export default function DonePage() {
+function DoneInner() {
+  const router = useRouter()
+  const params = useSearchParams()
+  const [checking, setChecking] = useState(true)
+  const justCheckedOut = params.get('checkout') === 'success'
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        router.replace('/login')
+        return
+      }
+      // If they just came back from Stripe Checkout, give the webhook a
+      // few seconds to land before we look up the row. Otherwise we'd
+      // bounce them right back to /pricing.
+      if (justCheckedOut) {
+        await new Promise((r) => setTimeout(r, 2000))
+      }
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+      const active = sub && (sub.status === 'trialing' || sub.status === 'active')
+      if (!active) {
+        router.replace('/pricing')
+        return
+      }
+      setChecking(false)
+    })
+  }, [router, justCheckedOut])
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white/60">
+        loading…
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-black">
       <div className="max-w-md w-full text-center">
@@ -29,5 +73,13 @@ export default function DonePage() {
         </Link>
       </div>
     </div>
+  )
+}
+
+export default function DonePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <DoneInner />
+    </Suspense>
   )
 }

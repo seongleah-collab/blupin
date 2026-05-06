@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getSubscription, competitorLimitFor } from '@/lib/billing/gate';
 
 type Competitor = { name: string; description: string; domain?: string; addedBy?: 'ai' | 'user' };
 
@@ -27,6 +28,30 @@ export async function POST(req: Request) {
       added_by: c.addedBy === 'user' ? 'user' : 'system',
       status: 'active',
     }));
+
+  // Enforce per-plan competitor limit. We only block when the user is
+  // *increasing* their list above their plan's cap — a starter user with
+  // 5 grandfathered competitors should still be able to save fewer.
+  // Onboarding (no subscription yet) skips the check entirely so users
+  // can preview what's possible before paying.
+  const sub = await getSubscription(supabase, user.id);
+  const limit = competitorLimitFor(sub);
+  if (sub && limit !== null && cleaned.length > limit) {
+    const { count: currentCount } = await supabase
+      .from('competitors')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+    if (cleaned.length > (currentCount ?? 0)) {
+      return NextResponse.json(
+        {
+          error: `your plan allows ${limit} competitor${limit === 1 ? '' : 's'}. upgrade for more.`,
+          code: 'competitor_limit_reached',
+          limit,
+        },
+        { status: 402 }
+      );
+    }
+  }
 
   const { error: delErr } = await supabase.from('competitors').delete().eq('user_id', user.id);
   if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });

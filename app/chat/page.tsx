@@ -149,6 +149,17 @@ function ChatPageInner() {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
+      // Hard paywall: no active subscription, no /chat.
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      const active = sub && (sub.status === 'trialing' || sub.status === 'active');
+      if (!active) {
+        router.replace('/pricing');
+        return;
+      }
       setUserEmail(user.email ?? null);
       const meta = (user.user_metadata ?? {}) as { full_name?: string; name?: string };
       const metaName = (meta.full_name || meta.name || '').split(' ')[0]?.toLowerCase();

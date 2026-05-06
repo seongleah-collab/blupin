@@ -1,6 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@/lib/supabase/server';
 import { severityFromLevel } from '@/lib/severity';
+import {
+  getSubscription,
+  hasAccess,
+  chatMessageLimitFor,
+  chatMessagesUsedThisPeriod,
+} from '@/lib/billing/gate';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -123,6 +129,28 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return new Response(JSON.stringify({ error: 'not authenticated' }), { status: 401 });
+    }
+
+    // Hard paywall + per-plan message limit.
+    const sub = await getSubscription(supabase, user.id);
+    if (!hasAccess(sub)) {
+      return new Response(
+        JSON.stringify({ error: 'subscription required', code: 'no_subscription' }),
+        { status: 402 }
+      );
+    }
+    const limit = chatMessageLimitFor(sub);
+    if (limit !== null && sub) {
+      const used = await chatMessagesUsedThisPeriod(supabase, user.id, sub);
+      if (used >= limit) {
+        return new Response(
+          JSON.stringify({
+            error: `monthly message limit reached (${limit}). upgrade for unlimited chat.`,
+            code: 'message_limit_reached',
+          }),
+          { status: 402 }
+        );
+      }
     }
 
     const [companyRes, competitorsRes, eventsRes] = await Promise.all([
