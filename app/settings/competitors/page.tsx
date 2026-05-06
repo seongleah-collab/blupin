@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import CompetitorLogo from '@/app/components/CompetitorLogo';
+import { PLANS, ACTIVE_STATUSES, type PlanSlug } from '@/lib/billing/plans';
 import { SectionHeader, Status, type SaveState } from '../_components/SectionHeader';
 
 type CompetitorRow = {
@@ -18,32 +20,49 @@ export default function CompetitorsPage() {
   const [competitors, setCompetitors] = useState<CompetitorRow[]>([]);
   const [state, setState] = useState<SaveState>('idle');
   const [error, setError] = useState<string | null>(null);
+  // null limit = unlimited (or no plan yet — we show no cap in that case).
+  const [competitorLimit, setCompetitorLimit] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase
-        .from('competitors')
-        .select('name, notes, domain')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('name', { ascending: true });
+
+      const [{ data: comps }, { data: sub }] = await Promise.all([
+        supabase
+          .from('competitors')
+          .select('name, notes, domain')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .order('name', { ascending: true }),
+        supabase
+          .from('subscriptions')
+          .select('plan, status')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+      ]);
       if (cancelled) return;
+
       setCompetitors(
-        (data ?? []).map((c) => ({
+        (comps ?? []).map((c) => ({
           name: c.name,
           notes: c.notes,
           domain: c.domain ?? null,
         }))
       );
+      if (sub && ACTIVE_STATUSES.has(sub.status)) {
+        setCompetitorLimit(PLANS[sub.plan as PlanSlug].limits.competitors);
+      }
       setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
   }, [supabase]);
+
+  const atLimit = competitorLimit !== null && competitors.length >= competitorLimit;
+  const overLimit = competitorLimit !== null && competitors.length > competitorLimit;
 
   async function save() {
     setState('saving');
@@ -64,7 +83,14 @@ export default function CompetitorsPage() {
         body: JSON.stringify({ competitors: cleaned }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? `failed: ${res.status}`);
+      if (!res.ok) {
+        if (res.status === 402 && data?.code === 'competitor_limit_reached') {
+          throw new Error(
+            `your plan tracks up to ${data.limit} competitor${data.limit === 1 ? '' : 's'}. upgrade in account settings to track more.`
+          );
+        }
+        throw new Error(data.error ?? `failed: ${res.status}`);
+      }
       setState('saved');
       setTimeout(() => setState('idle'), 2000);
     } catch (err: any) {
@@ -96,6 +122,26 @@ export default function CompetitorsPage() {
         <div className="text-[13px] text-neutral-500 dark:text-neutral-400">loading…</div>
       ) : (
         <>
+          <div className="flex items-center justify-between mb-3 text-[12px] text-neutral-500 dark:text-neutral-400">
+            <span>
+              {competitorLimit === null
+                ? `${competitors.length} tracked`
+                : `${competitors.length} of ${competitorLimit} tracked`}
+            </span>
+            {atLimit && competitorLimit !== null && (
+              <Link
+                href="/pricing"
+                className="text-[12px] underline underline-offset-2 hover:text-neutral-900 dark:hover:text-neutral-100"
+              >
+                upgrade for more
+              </Link>
+            )}
+          </div>
+          {overLimit && competitorLimit !== null && (
+            <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/10 px-3 py-2 text-[12px] text-amber-900 dark:text-amber-200">
+              you&apos;re tracking more than your plan allows ({competitors.length} / {competitorLimit}). remove some, or upgrade to keep them all.
+            </div>
+          )}
           {competitors.length === 0 ? (
             <div className="px-4 py-6 rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-[13px] text-neutral-500 dark:text-neutral-400">
               no competitors tracked yet.
@@ -140,9 +186,10 @@ export default function CompetitorsPage() {
           <button
             type="button"
             onClick={add}
-            className="w-full mt-3 py-2 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700 text-[13px] text-neutral-600 dark:text-neutral-300 hover:border-neutral-500 dark:hover:border-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+            disabled={atLimit}
+            className="w-full mt-3 py-2 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700 text-[13px] text-neutral-600 dark:text-neutral-300 hover:border-neutral-500 dark:hover:border-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-neutral-300 dark:disabled:hover:border-neutral-700"
           >
-            + add competitor
+            {atLimit ? `at limit — upgrade to add more` : '+ add competitor'}
           </button>
           <div className="flex justify-start pt-4">
             <button
