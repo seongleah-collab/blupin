@@ -22,6 +22,8 @@ self.addEventListener('push', (event) => {
   const options = {
     body: data.body || '',
     tag: data.tag || 'blupin-event',
+    icon: data.icon || '/icon-192.png',
+    badge: data.badge || '/badge-96.png',
     data: { url: data.url || '/feed' },
     requireInteraction: data.requireInteraction === true,
   };
