@@ -42,6 +42,23 @@ export default function NotificationsPage() {
         const reg = await navigator.serviceWorker.getRegistration('/sw.js');
         const sub = await reg?.pushManager.getSubscription();
         if (!cancelled) setSubscribed(!!sub);
+        // Self-heal: browser may hold a subscription whose DB row was pruned
+        // (404/410 from push service, key rotation, etc). Re-upsert silently
+        // so the server side catches up.
+        if (sub) {
+          const json = sub.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
+          if (json.endpoint && json.keys?.p256dh && json.keys?.auth) {
+            fetch('/api/push/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                endpoint: json.endpoint,
+                keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
+                userAgent: navigator.userAgent,
+              }),
+            }).catch(() => {});
+          }
+        }
       } catch {
         // ignore
       }
@@ -162,9 +179,31 @@ export default function NotificationsPage() {
   async function sendTest() {
     setTestStatus('sending…');
     try {
-      const res = await fetch('/api/push/test', { method: 'POST' });
-      const data = await res.json();
+      let res = await fetch('/api/push/test', { method: 'POST' });
+      let data = await res.json();
       if (!res.ok) throw new Error(data.error ?? `failed: ${res.status}`);
+
+      // If the server has no row but the browser does, resync once and retry.
+      if (data.sent === 0) {
+        const reg = await navigator.serviceWorker.getRegistration('/sw.js');
+        const sub = await reg?.pushManager.getSubscription();
+        const json = sub?.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } } | undefined;
+        if (json?.endpoint && json.keys?.p256dh && json.keys?.auth) {
+          await fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              endpoint: json.endpoint,
+              keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
+              userAgent: navigator.userAgent,
+            }),
+          });
+          res = await fetch('/api/push/test', { method: 'POST' });
+          data = await res.json();
+          if (!res.ok) throw new Error(data.error ?? `failed: ${res.status}`);
+        }
+      }
+
       setTestStatus(data.sent > 0 ? `sent to ${data.sent} device${data.sent === 1 ? '' : 's'}` : 'no devices subscribed');
       setTimeout(() => setTestStatus(null), 4000);
     } catch (err: any) {
