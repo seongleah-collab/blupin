@@ -38,8 +38,8 @@ const faqs: FaqItem[] = [
     a: "early-stage founders and small product teams who can't afford a full-time market researcher but also can't afford to miss a threat that ships next week.",
   },
   {
-    q: 'can i integrate with slack or email?',
-    a: "email digests are live at launch. slack is on the near-term roadmap. let us know which integrations matter most for your workflow and we'll prioritize.",
+    q: 'can i integrate with slack?',
+    a: "browser push notifications are live now — you get pinged the moment a real threat lands, no inbox to check. slack is on the near-term roadmap. we skip email digests on purpose — founders don't read them.",
   },
 ];
 
