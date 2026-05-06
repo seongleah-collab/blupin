@@ -495,67 +495,41 @@ function ChatPageInner() {
             </main>
 
             <div>
-              <div className="max-w-2xl mx-auto px-6 pb-6 pt-2">{composer}</div>
+              <div className="max-w-2xl mx-auto px-6 pb-6 pt-2">
+                {paywall && (
+                  <div className="mb-3 flex items-center gap-3 rounded-full border border-amber-200 bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/10 px-4 py-2 text-[13px]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" aria-hidden />
+                    <span className="flex-1 text-amber-900 dark:text-amber-200 leading-snug">
+                      {paywall.code === 'message_limit_reached'
+                        ? "you've hit your monthly message limit."
+                        : 'your trial has ended.'}
+                    </span>
+                    <Link
+                      href={paywall.code === 'message_limit_reached' ? '/settings/account' : '/pricing'}
+                      className="shrink-0 px-3 py-1 rounded-full bg-amber-900 dark:bg-amber-200 text-white dark:text-amber-950 text-[12px] font-medium hover:bg-amber-800 dark:hover:bg-amber-100 transition-colors"
+                    >
+                      {paywall.code === 'message_limit_reached' ? 'upgrade' : 'see plans'}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setPaywall(null)}
+                      aria-label="dismiss"
+                      className="shrink-0 text-amber-700/70 dark:text-amber-300/70 hover:text-amber-900 dark:hover:text-amber-100"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+                {composer}
+              </div>
             </div>
           </>
         )}
       </div>
       </div>
-
-      {paywall && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setPaywall(null)}
-        >
-          <div
-            className="w-full max-w-md rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-7 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4 mb-1">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
-                {paywall.code === 'message_limit_reached' ? 'monthly limit reached' : 'no active plan'}
-              </p>
-              <button
-                type="button"
-                onClick={() => setPaywall(null)}
-                aria-label="close"
-                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 -mt-1 -mr-1 leading-none"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M18 6 6 18" />
-                  <path d="m6 6 12 12" />
-                </svg>
-              </button>
-            </div>
-            <h2 className={`${fraunces.className} italic text-3xl text-neutral-900 dark:text-neutral-50 leading-tight mb-3`}>
-              {paywall.code === 'message_limit_reached' ? "you're out of messages." : 'your trial has ended.'}
-            </h2>
-            <p className="text-[14px] text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6">
-              {paywall.code === 'message_limit_reached'
-                ? "you've used every message on your plan this month. upgrade to keep chatting — or wait until next month resets."
-                : "subscribe to keep watching competitors and chatting with blupin. you can always cancel from settings."}
-            </p>
-            <div className="flex items-center gap-2">
-              <Link
-                href={paywall.code === 'message_limit_reached' ? '/settings/account' : '/pricing'}
-                onClick={() => setPaywall(null)}
-                className="flex-1 text-center px-4 py-2.5 rounded-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-[14px] font-medium hover:bg-neutral-800 dark:hover:bg-white transition-colors"
-              >
-                {paywall.code === 'message_limit_reached' ? 'upgrade plan' : 'see plans'}
-              </Link>
-              <button
-                type="button"
-                onClick={() => setPaywall(null)}
-                className="px-4 py-2.5 rounded-full text-[14px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
-              >
-                not now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
