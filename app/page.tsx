@@ -68,6 +68,7 @@ export default function Home() {
 
           <nav className="hidden sm:flex items-center gap-7 text-sm justify-self-center">
             <a href="#how-it-works" className="font-medium text-neutral-700 hover:text-neutral-900 transition">how it works</a>
+            <Link href="/pricing" className="font-medium text-neutral-700 hover:text-neutral-900 transition">pricing</Link>
             <a href="#about" className="font-medium text-neutral-700 hover:text-neutral-900 transition">about</a>
             <a href="#faq" className="font-medium text-neutral-700 hover:text-neutral-900 transition">faq</a>
           </nav>
@@ -449,6 +450,7 @@ export default function Home() {
               <p className="text-xs uppercase tracking-[0.18em] text-neutral-400 font-medium mb-4">resources</p>
               <ul className="space-y-2.5 text-sm">
                 <li><a href="#how-it-works" className="text-neutral-600 hover:text-neutral-900 transition">how it works</a></li>
+                <li><Link href="/pricing" className="text-neutral-600 hover:text-neutral-900 transition">pricing</Link></li>
                 <li><a href="#about" className="text-neutral-600 hover:text-neutral-900 transition">about</a></li>
                 <li><a href="#faq" className="text-neutral-600 hover:text-neutral-900 transition">faq</a></li>
               </ul>

@@ -11,6 +11,7 @@ type NavLink = { href: string; label: string };
 
 const defaultLinks: NavLink[] = [
   { href: '/#how-it-works', label: 'how it works' },
+  { href: '/pricing', label: 'pricing' },
   { href: '/#about', label: 'about' },
   { href: '/faq', label: 'faq' },
   { href: '/waitlist', label: 'join waitlist' },
