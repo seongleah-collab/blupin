@@ -2,7 +2,7 @@ import { Fraunces } from 'next/font/google';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 
