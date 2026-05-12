@@ -8,6 +8,16 @@ blupin is an AI-native competitive intelligence co-pilot for founders. It watche
 
 Taglines in use: "competitive intelligence, at your speed." Positioning notes: faster cadence than Competely/Seeto/ChampSignal (hours/days vs. 2–4 week digests), surfaces threats the user doesn't know to look for, prescribes action instead of just reporting.
 
+## Codebase architecture vault
+
+A live Obsidian vault at `~/Documents/blupin-vault` documents how blupin's backend sectors connect — auth, onboarding, ingest, classifier, push notifications, chat, billing, plus the database schema and route inventory.
+
+- `_Map of Content.md` is the spine (system diagram + links to everything).
+- `flows/` notes are the highest-leverage reads for cross-cutting backend questions.
+- For any backend task, read the relevant flow note BEFORE grepping code — it gives the shape so you can ask narrow questions of the source.
+- After making changes to a backend sector, update the corresponding vault note in the same turn. Otherwise the vault drifts and stops being trustworthy.
+- Notes marked `(verify in code)` weren't fully validated at write-time — confirm with grep before relying.
+
 ## Founder context
 
 Solo founder. v1 is being built solo on purpose — equity + traction first, cofounder search deferred until after PMF signal. Prior startup (Noted) is paused. Do not suggest "ask your team" or "loop in your cofounder" — there isn't one.
@@ -68,19 +78,28 @@ The callback route builds its own `NextResponse` and wires cookies through it; t
 
 ## What's built vs. what's next
 
-**Built:**
-- Landing page (localhost only — production still shows Next.js boilerplate)
-- Waitlist → magic link → callback → onboarding (step 1)
-- `/chat` with Sonnet streaming, pulling `user_companies` + classified events as context
+**Built (as of 2026-05-09):**
+- Landing page — live on production at `blupin.vercel.app`
+- Legal pages: `/privacy`, `/terms` (linked from landing footer)
+- Auth: magic-link + Google OAuth, callback route handling cookies-on-redirect quirk
+- Onboarding step 1 (company name + description) and step 2 (Claude auto-suggests competitors → user confirms)
+- `/chat` with Sonnet streaming, pulls `user_companies` + `competitors` + classified events as context
+- Conversation history: sidebar list, single-conversation load/rename/delete
 - Ingest adapters (Product Hunt, HN via Algolia API, Reddit r/SideProject + r/SaaS)
-- Haiku classifier with tuned CI-focused prompt
+- Haiku classifier with CI-tuned prompt; classifier writes back niche_match, threat_level, relevance_score, summary, recommended_action
 - Vercel Cron refresh job (daily 7am PT)
+- Billing: Stripe **live mode active 2026-05-08**, three plans (starter $15 / pro $25 / scale $49 monthly), 7-day trial on every tier, checkout + customer portal + webhook (subscription.created/updated/deleted)
+- Paywall enforcement at `POST /api/chat` (402) and `POST /api/onboarding/competitors` (402); `/chat` surfaces 402 as inline amber pill, NOT a redirect
+- `/pricing` page with plan comparison
+- Push notifications: web push (VAPID), subscribe/unsubscribe/preferences endpoints, `notifyUser` fires from inside the classifier on every `niche_match` event, gated by user's `notification_preferences` (web_push_enabled + min_severity)
+- `/settings` (account, plan, push notification prefs with test-ping button)
+- `/feed` events feed with regenerate action
+- `/competitor/[name]` detail pages (profile, activity, events)
 
 **Next up:**
-- `/onboarding/competitors` — step 2, Claude auto-suggests competitors from the user's company description, user confirms/edits
-- `/onboarding` step 3 — TBD
-- Push landing page to Vercel production
-- Post-onboarding handoff into `/chat`
+- UI polish on landing/in-app surfaces (scoped, no new features)
+- Linear setup for founder + cofounder workflow
+- Backlog beyond v1 polish is open — no new ingest sources planned (X/LinkedIn/TikTok are explicitly v2)
 
 ## Communication preferences
 

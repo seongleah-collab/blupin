@@ -438,7 +438,7 @@ export default function Home() {
         <footer className="px-5 pt-16 pb-8 border-t border-neutral-200/70 bg-slate-100">
           <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-12 gap-10">
             {/* left — wordmark + tagline */}
-            <div className="col-span-2 md:col-span-5 flex flex-col gap-3">
+            <div className="col-span-2 md:col-span-7 flex flex-col gap-3">
               <Wordmark className="text-2xl font-medium text-neutral-700" dotClassName="text-sky-400" />
               <p className="text-sm text-neutral-500 max-w-sm leading-relaxed">
                 competitive intelligence for founders who can&apos;t afford to miss.
@@ -453,15 +453,6 @@ export default function Home() {
                 <li><Link href="/pricing" className="text-neutral-600 hover:text-neutral-900 transition">pricing</Link></li>
                 <li><a href="#about" className="text-neutral-600 hover:text-neutral-900 transition">about</a></li>
                 <li><a href="#faq" className="text-neutral-600 hover:text-neutral-900 transition">faq</a></li>
-              </ul>
-            </div>
-
-            {/* support */}
-            <div className="md:col-span-2">
-              <p className="text-xs uppercase tracking-[0.18em] text-neutral-400 font-medium mb-4">support</p>
-              <ul className="space-y-2.5 text-sm">
-                <li><a href="#" className="text-neutral-600 hover:text-neutral-900 transition">help center</a></li>
-                <li><a href="#" className="text-neutral-600 hover:text-neutral-900 transition">contact</a></li>
               </ul>
             </div>
 
