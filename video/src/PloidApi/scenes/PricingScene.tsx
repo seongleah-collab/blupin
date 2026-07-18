@@ -88,7 +88,7 @@ export const PricingScene: React.FC = () => {
           height: 90,
         }}
       >
-        {headSwap < 0.5 ? 'we killed the data stack.' : 'same depth. one key. pay as you go.'}
+        {headSwap < 0.5 ? 'we killed the data stack.' : 'same depth. one place. pay as you go.'}
       </div>
 
       <div
@@ -119,9 +119,11 @@ export const PricingScene: React.FC = () => {
             transform: `scale(${0.8 + greenIn * 0.2}) translateY(${(1 - Math.min(1, greenIn)) * 30}px)`,
           }}
         >
-          <div style={{fontSize: 50, fontWeight: 700, color: COLORS.ink}}>one API key</div>
-          <div style={{fontFamily: FONT_MONO, fontSize: 30, color: COLORS.greenDark, marginTop: 16}}>
-            pld_live_••••••••••••
+          <div style={{fontSize: 50, fontWeight: 700, color: COLORS.ink}}>
+            ploid<span style={{color: COLORS.greenDark}}>.</span>
+          </div>
+          <div style={{fontFamily: FONT_MONO, fontSize: 28, color: COLORS.greenDark, marginTop: 16}}>
+            search · enrich · reason
           </div>
           <div style={{fontFamily: FONT_MONO, fontSize: 24, color: '#3E6B4E', marginTop: 18, lineHeight: 1.6}}>
             one credit pool · no seats

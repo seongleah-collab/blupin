@@ -33,7 +33,7 @@ export const TitleIntro: React.FC = () => {
             transform: `translateY(${(1 - line1) * 40}px)`,
           }}
         >
-          Introducing the Ploid API
+          Introducing Ploid
         </div>
         <div
           style={{
@@ -46,7 +46,7 @@ export const TitleIntro: React.FC = () => {
             transform: `translateY(${(1 - line2) * 40}px)`,
           }}
         >
-          every person on earth, one key away
+          the search engine, built for people
         </div>
       </div>
     </AbsoluteFill>

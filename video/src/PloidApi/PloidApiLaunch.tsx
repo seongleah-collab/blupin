@@ -17,7 +17,7 @@ const SCENES: Array<{Comp: React.FC; frames: number; dark?: boolean; grid?: bool
   {Comp: PromptScene, frames: 130},
   {Comp: TableReveal, frames: 105, grid: true},
   {Comp: NameCloseup, frames: 55, grid: true},
-  {Comp: DarkApiScene, frames: 240, dark: true},
+  {Comp: DarkApiScene, frames: 165, dark: true},
   {Comp: TablePayoff, frames: 175, grid: true},
   {Comp: PricingScene, frames: 135, grid: true},
   {Comp: TaglineScene, frames: 85, grid: true},

@@ -35,7 +35,7 @@ export const Outro: React.FC = () => {
             transform: `translateY(${(1 - subIn) * 24}px)`,
           }}
         >
-          get your API key → <span style={{color: COLORS.greenDark, fontWeight: 700}}>ploid.com</span>
+          find the right people → <span style={{color: COLORS.greenDark, fontWeight: 700}}>ploid.com</span>
         </div>
       </div>
     </AbsoluteFill>

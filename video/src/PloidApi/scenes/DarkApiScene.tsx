@@ -1,20 +1,11 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {DotGrid} from '../DotGrid';
-import {blink, typed} from '../helpers';
 import {COLORS, FONT_MONO, FONT_SANS} from '../theme';
 
-const CURL_LINES = [
-  '$ curl api.ploid.com/v1/people/search \\',
-  '    -H "x-api-key: pld_live_9f3kQ...w2" \\',
-  `    -d '{"q": "heads of growth, seed fintech, nyc"}'`,
-];
-
-const TYPE_START = 8;
-const TYPE_DUR = 66;
-const COUNT_START = TYPE_START + TYPE_DUR + 14; // 88
+const COUNT_START = 10;
 const COUNT_DUR = 52;
-const ENRICH_START = COUNT_START + COUNT_DUR + 10; // 150
+const ENRICH_START = COUNT_START + COUNT_DUR + 10; // 72
 
 const ENRICH_ROWS: Array<{label: string; parts: Array<{t: string; green?: boolean}>}> = [
   {label: 'PROFILE', parts: [{t: 'Maya Chen · NYC · '}, {t: 'verified live', green: true}]},
@@ -29,15 +20,6 @@ const ROW_EVERY = 16;
 export const DarkApiScene: React.FC = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-
-  const curlText = typed(frame, CURL_LINES.join('\n'), TYPE_START, TYPE_DUR);
-  const curlDone = frame >= TYPE_START + TYPE_DUR;
-
-  // Curl block fades and slides up once the search kicks off.
-  const curlOut = interpolate(frame, [COUNT_START - 6, COUNT_START + 6], [1, 0], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
 
   const count = Math.round(
     interpolate(frame, [COUNT_START, COUNT_START + COUNT_DUR], [0, 3_241_008_116], {
@@ -68,34 +50,6 @@ export const DarkApiScene: React.FC = () => {
   return (
     <AbsoluteFill style={{background: COLORS.dark}}>
       <DotGrid dark />
-
-      {curlOut > 0 ? (
-        <AbsoluteFill style={{justifyContent: 'center', alignItems: 'center', opacity: curlOut}}>
-          <pre
-            style={{
-              fontFamily: FONT_MONO,
-              fontSize: 40,
-              lineHeight: 1.75,
-              color: COLORS.darkText,
-              margin: 0,
-            }}
-          >
-            {curlText}
-            {!curlDone || blink(frame) ? (
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: 22,
-                  height: 44,
-                  background: COLORS.greenBright,
-                  verticalAlign: 'middle',
-                  marginLeft: 4,
-                }}
-              />
-            ) : null}
-          </pre>
-        </AbsoluteFill>
-      ) : null}
 
       {countVisible ? (
         <AbsoluteFill style={{justifyContent: 'center', alignItems: 'center', opacity: countOut}}>

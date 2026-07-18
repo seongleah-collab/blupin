@@ -40,9 +40,9 @@ export const TaglineScene: React.FC = () => {
               zIndex: 0,
             }}
           />
-          <span style={{position: 'relative', zIndex: 1}}>one key</span>
+          <span style={{position: 'relative', zIndex: 1}}>one search</span>
         </span>{' '}
-        is all your agent needs.
+        is all you need.
       </div>
     </AbsoluteFill>
   );
