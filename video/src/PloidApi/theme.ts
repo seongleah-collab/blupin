@@ -3,8 +3,8 @@ import {staticFile} from 'remotion';
 
 // Fonts are self-hosted in public/fonts (latin subsets) so renders don't
 // need network access from inside the headless browser.
-const load = (family: string, file: string, weight: string) =>
-  loadFont({family, url: staticFile(`fonts/${file}`), weight});
+const load = (family: string, file: string, weight: string, style = 'normal') =>
+  loadFont({family, url: staticFile(`fonts/${file}`), weight, style});
 
 for (const w of ['400', '500', '600', '700']) {
   load('Inter', `Inter-${w}.woff2`, w);
@@ -12,24 +12,35 @@ for (const w of ['400', '500', '600', '700']) {
 for (const w of ['400', '500', '700']) {
   load('JetBrains Mono', `JetBrainsMono-${w}.woff2`, w);
 }
+load('Fraunces', 'Fraunces-600.woff2', '600');
+load('Fraunces', 'Fraunces-700.woff2', '700');
+load('Fraunces', 'Fraunces-600-italic.woff2', '600', 'italic');
 
 export const FONT_SANS = `Inter, -apple-system, sans-serif`;
 export const FONT_MONO = `'JetBrains Mono', monospace`;
+export const FONT_SERIF = `Fraunces, Georgia, serif`;
 
 export const COLORS = {
-  cream: '#F5F6EF',
-  creamCard: '#FDFDF9',
-  ink: '#1A1A1A',
-  inkSoft: '#6B6B62',
-  grid: 'rgba(60, 70, 40, 0.10)',
-  // Accent family: bright orange (keys kept for history; values are orange).
-  green: '#FFA13D',
-  greenBright: '#FF8C1A',
-  greenDark: '#C2570F',
-  greenWash: '#FFE3C0',
-  orange: '#C25E33',
-  dark: '#1D1F1C',
-  darkSoft: '#2A2D29',
-  darkText: '#E8EAE4',
-  darkDim: '#5C6058',
+  // Warm paper + ink, punchy orange. Ploid's own look — no dot grid,
+  // no terminal, editorial type.
+  paper: '#FAF6EE',
+  paperCard: '#FFFDF8',
+  ink: '#191410',
+  inkSoft: '#7A7166',
+  orange: '#FF6B1A',
+  orangeDeep: '#C74E00',
+  orangeWash: '#FFE4CB',
+
+  // Legacy keys still referenced by shared bits.
+  cream: '#FAF6EE',
+  creamCard: '#FFFDF8',
+  grid: 'rgba(60, 50, 30, 0.10)',
+  green: '#FF9C42',
+  greenBright: '#FF6B1A',
+  greenDark: '#C74E00',
+  greenWash: '#FFE4CB',
+  dark: '#191410',
+  darkSoft: '#2E2620',
+  darkText: '#F4EEE4',
+  darkDim: '#6B6157',
 };
