@@ -12,13 +12,11 @@ for (const w of ['400', '500', '600', '700']) {
 for (const w of ['400', '500', '700']) {
   load('JetBrains Mono', `JetBrainsMono-${w}.woff2`, w);
 }
-load('Fraunces', 'Fraunces-600.woff2', '600');
-load('Fraunces', 'Fraunces-700.woff2', '700');
-load('Fraunces', 'Fraunces-600-italic.woff2', '600', 'italic');
-
 export const FONT_SANS = `Inter, -apple-system, sans-serif`;
 export const FONT_MONO = `'JetBrains Mono', monospace`;
-export const FONT_SERIF = `Fraunces, Georgia, serif`;
+// Display font follows the body font — Fraunces woff2s stay in
+// public/fonts if a serif look is ever wanted again.
+export const FONT_SERIF = FONT_SANS;
 
 export const COLORS = {
   // Warm paper + ink, punchy orange. Ploid's own look — no dot grid,

@@ -20,8 +20,8 @@ export const PricingList: React.FC = () => {
   const cardIn = spring({frame: frame - CARD_AT, fps, config: {damping: 14, stiffness: 130}, durationInFrames: 26});
 
   return (
-    <AbsoluteFill style={{justifyContent: 'center'}}>
-      <div style={{display: 'flex', alignItems: 'center', gap: 130, paddingLeft: 260}}>
+    <AbsoluteFill style={{justifyContent: 'center', alignItems: 'center'}}>
+      <div style={{display: 'flex', alignItems: 'center', gap: 150}}>
         <div>
           <div
             style={{
