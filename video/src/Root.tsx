@@ -2,12 +2,22 @@ import "./index.css";
 import { Composition } from "remotion";
 import { HelloWorld, myCompSchema } from "./HelloWorld";
 import { Logo, myCompSchema2 } from "./HelloWorld/Logo";
+import { PloidApiLaunch, TOTAL_FRAMES } from "./PloidApi/PloidApiLaunch";
 
 // Each <Composition> is an entry in the sidebar!
 
 export const RemotionRoot: React.FC = () => {
   return (
     <>
+      <Composition
+        id="PloidApiLaunch"
+        component={PloidApiLaunch}
+        durationInFrames={TOTAL_FRAMES}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+
       <Composition
         // You can take the "id" to render a video:
         // npx remotion render HelloWorld
