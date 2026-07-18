@@ -118,7 +118,7 @@ export const PeopleTable: React.FC<{
               alignItems: 'center',
               padding: '17px 26px',
               borderTop: '1px solid rgba(60, 70, 40, 0.08)',
-              background: hl > 0 ? `rgba(140, 232, 169, ${hl * 0.55})` : 'transparent',
+              background: hl > 0 ? `rgba(255, 161, 61, ${hl * 0.45})` : 'transparent',
               opacity: dimOthers,
             }}
           >

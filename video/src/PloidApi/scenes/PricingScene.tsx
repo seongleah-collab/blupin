@@ -114,7 +114,7 @@ export const PricingScene: React.FC = () => {
             borderRadius: 20,
             padding: '36px 40px',
             textAlign: 'center',
-            boxShadow: '0 16px 50px rgba(28, 107, 60, 0.18)',
+            boxShadow: '0 16px 50px rgba(194, 87, 15, 0.20)',
             opacity: Math.min(1, greenIn),
             transform: `scale(${0.8 + greenIn * 0.2}) translateY(${(1 - Math.min(1, greenIn)) * 30}px)`,
           }}
@@ -125,7 +125,7 @@ export const PricingScene: React.FC = () => {
           <div style={{fontFamily: FONT_MONO, fontSize: 28, color: COLORS.greenDark, marginTop: 16}}>
             search · enrich · reason
           </div>
-          <div style={{fontFamily: FONT_MONO, fontSize: 24, color: '#3E6B4E', marginTop: 18, lineHeight: 1.6}}>
+          <div style={{fontFamily: FONT_MONO, fontSize: 24, color: '#8F5318', marginTop: 18, lineHeight: 1.6}}>
             one credit pool · no seats
             <br />
             no surprise overages
