@@ -1,6 +1,6 @@
 import React from 'react';
-import {spring, useCurrentFrame, useVideoConfig, AbsoluteFill} from 'remotion';
-import {COLORS, FONT_MONO, FONT_SERIF} from '../theme';
+import {Img, spring, staticFile, useCurrentFrame, useVideoConfig, AbsoluteFill} from 'remotion';
+import {COLORS, FONT_MONO} from '../theme';
 
 export const Outro: React.FC = () => {
   const frame = useCurrentFrame();
@@ -14,16 +14,14 @@ export const Outro: React.FC = () => {
       <div style={{textAlign: 'center'}}>
         <div
           style={{
-            fontFamily: FONT_SERIF,
-            fontWeight: 700,
-            fontSize: 200,
-            letterSpacing: '-0.03em',
-            color: COLORS.ink,
             opacity: logoIn,
             transform: `translateY(${(1 - logoIn) * 40}px)`,
+            display: 'flex',
+            justifyContent: 'center',
           }}
         >
-          ploid<span style={{color: COLORS.orange}}>.</span>
+          {/* Official lettermark (mark + PLOID) from ploid.com */}
+          <Img src={staticFile('ploid-lettermark.svg')} style={{width: 780, height: 'auto'}} />
         </div>
         <div
           style={{
