@@ -3,7 +3,7 @@ import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from
 import {COLORS, FONT_MONO, FONT_SANS} from '../theme';
 
 const STACK = [
-  {name: 'Apollo', price: 'seats'},
+  {name: 'Apollo', price: '$4,000 / yr'},
   {name: 'ZoomInfo', price: '$15K+ / yr'},
   {name: 'Clay', price: 'credits×3'},
 ];

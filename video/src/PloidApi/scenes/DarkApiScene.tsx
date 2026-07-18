@@ -17,19 +17,22 @@ const ENRICH_ROWS: Array<{label: string; parts: Array<{t: string; green?: boolea
 
 const ROW_EVERY = 16;
 
+// Dark "searching" beat, then a cut to the cream background for the
+// enrichment rows.
 export const DarkApiScene: React.FC = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
 
+  const enriching = frame >= ENRICH_START;
+
   const count = Math.round(
-    interpolate(frame, [COUNT_START, COUNT_START + COUNT_DUR], [0, 3_241_008_116], {
+    interpolate(frame, [COUNT_START, COUNT_START + COUNT_DUR], [0, 2_000_000_000], {
       extrapolateLeft: 'clamp',
       extrapolateRight: 'clamp',
       easing: (t) => 1 - (1 - t) ** 4,
     }),
   );
-  const countVisible = frame >= COUNT_START && frame < ENRICH_START + 4;
-  const countOut = interpolate(frame, [ENRICH_START - 8, ENRICH_START + 2], [1, 0], {
+  const countOut = interpolate(frame, [ENRICH_START - 8, ENRICH_START - 1], [1, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -48,10 +51,10 @@ export const DarkApiScene: React.FC = () => {
   });
 
   return (
-    <AbsoluteFill style={{background: COLORS.dark}}>
-      <DotGrid dark />
+    <AbsoluteFill style={{background: enriching ? COLORS.cream : COLORS.dark}}>
+      <DotGrid dark={!enriching} />
 
-      {countVisible ? (
+      {!enriching ? (
         <AbsoluteFill style={{justifyContent: 'center', alignItems: 'center', opacity: countOut}}>
           <div style={{textAlign: 'center'}}>
             <div style={{fontFamily: FONT_MONO, fontSize: 48, color: COLORS.darkText}}>
@@ -70,16 +73,14 @@ export const DarkApiScene: React.FC = () => {
             </div>
           </div>
         </AbsoluteFill>
-      ) : null}
-
-      {frame >= ENRICH_START ? (
+      ) : (
         <AbsoluteFill style={{justifyContent: 'center', alignItems: 'center'}}>
           <div style={{transform: `translateY(${drift * -70}px)`}}>
             {ENRICH_ROWS.slice(0, visibleRows).map((row, i) => {
               const rowStart = ENRICH_START + i * ROW_EVERY;
               const on = spring({frame: frame - rowStart, fps, config: {damping: 200}, durationInFrames: 14});
               const isNewest = i === visibleRows - 1;
-              const age = interpolate(frame, [rowStart + ROW_EVERY, rowStart + ROW_EVERY * 2.6], [1, 0.32], {
+              const age = interpolate(frame, [rowStart + ROW_EVERY, rowStart + ROW_EVERY * 2.6], [1, 0.42], {
                 extrapolateLeft: 'clamp',
                 extrapolateRight: 'clamp',
               });
@@ -100,16 +101,17 @@ export const DarkApiScene: React.FC = () => {
                       fontFamily: FONT_MONO,
                       fontSize: 25,
                       letterSpacing: '0.16em',
-                      color: isNewest ? COLORS.greenBright : COLORS.darkDim,
+                      color: isNewest ? COLORS.greenDark : '#9A9B8E',
                       width: 260,
                       textAlign: 'right',
+                      fontWeight: isNewest ? 700 : 500,
                     }}
                   >
                     {row.label}
                   </div>
-                  <div style={{fontFamily: FONT_SANS, fontSize: 46, fontWeight: 600, color: COLORS.darkText}}>
+                  <div style={{fontFamily: FONT_SANS, fontSize: 46, fontWeight: 600, color: COLORS.ink}}>
                     {row.parts.map((p, j) => (
-                      <span key={j} style={{color: p.green ? '#86EFAC' : undefined}}>
+                      <span key={j} style={{color: p.green ? COLORS.greenDark : undefined}}>
                         {p.t}
                       </span>
                     ))}
@@ -119,7 +121,7 @@ export const DarkApiScene: React.FC = () => {
             })}
           </div>
         </AbsoluteFill>
-      ) : null}
+      )}
     </AbsoluteFill>
   );
 };
